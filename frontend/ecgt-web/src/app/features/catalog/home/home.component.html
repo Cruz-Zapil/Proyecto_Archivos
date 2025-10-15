@@ -1,0 +1,17 @@
+  <h2>Catálogo</h2>
+
+    <input
+      type="search"
+      placeholder="Buscar productos…"
+      [value]="q()"
+      (input)="q.set($any($event.target)?.value)"
+      style="padding:8px;border:1px solid #e5e7eb;border-radius:8px;min-width:260px;"
+    />
+
+    <div class="grid" *ngIf="filtered().length; else empty">
+      <app-product-card *ngFor="let p of filtered()" [product]="p"></app-product-card>
+    </div>
+
+    <ng-template #empty>
+      <p style="color:#6b7280">No hay productos que coincidan con “{{ q() }}”.</p>
+    </ng-template>

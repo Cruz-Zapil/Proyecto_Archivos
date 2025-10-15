@@ -1,0 +1,14 @@
+ <ng-container *ngIf="product; else notFound">
+      <h2>{{ product.name }}</h2>
+      <p>{{ product.description }}</p>
+      <p><strong>Precio: Q{{ product.price }}</strong></p>
+      <p><small>Stock: {{ product.stock }}</small></p>
+
+      <button (click)="addToCart()" style="padding:8px 12px;border-radius:8px;border:1px solid #ccc;">
+        🛒 Agregar al carrito
+      </button>
+    </ng-container>
+
+    <ng-template #notFound>
+      <p>Producto no encontrado.</p>
+    </ng-template>

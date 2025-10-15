@@ -1,0 +1,15 @@
+<a [routerLink]="['/product', product.id]" class="card">
+      <div class="thumb" *ngIf="product.imageUrl; else noimg">
+        <img [src]="product.imageUrl" [alt]="product.name">
+      </div>
+      <ng-template #noimg>
+        <div class="thumb placeholder">Sin imagen</div>
+      </ng-template>
+
+      <h3>{{ product.name }}</h3>
+      <p class="desc">{{ product.description }}</p>
+      <div class="meta">
+        <strong>Q{{ product.price }}</strong>
+        <small>Stock: {{ product.stock }}</small>
+      </div>
+    </a>
