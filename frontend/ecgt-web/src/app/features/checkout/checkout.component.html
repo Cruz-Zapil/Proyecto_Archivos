@@ -1,0 +1,63 @@
+    <h2>Checkout</h2>
+
+    <!-- Si no hay items, muestra aviso -->
+    <div *ngIf="items().length === 0; else formTpl">
+      <p>Tu carrito está vacío.</p>
+      <a routerLink="/">Ir al catálogo</a>
+    </div>
+
+    <ng-template #formTpl>
+      <!-- Resumen a la derecha en pantallas grandes; simple en móviles -->
+      <div style="display:grid;grid-template-columns:1fr;gap:16px;max-width:820px">
+        <!-- Resumen -->
+        <section style="border:1px solid #eee;border-radius:12px;padding:12px;">
+          <h3>Resumen</h3>
+          <ul>
+            <li *ngFor="let i of items()">
+              {{ i.product.name }} × {{ i.qty }} — Q{{ i.product.price * i.qty }}
+            </li>
+          </ul>
+          <p style="margin-top:8px"><strong>Total: Q{{ total() }}</strong></p>
+        </section>
+
+        <!-- Formulario de pago (ficticio) -->
+        <section style="border:1px solid #eee;border-radius:12px;padding:12px;">
+          <h3>Pago con tarjeta</h3>
+          <form (ngSubmit)="submit()" #f="ngForm" autocomplete="off">
+            <label>
+              Nombre en la tarjeta
+              <input name="name" [(ngModel)]="name" required
+                     style="display:block;width:100%;padding:8px;border:1px solid #ddd;border-radius:8px">
+            </label>
+
+            <label style="display:block;margin-top:8px">
+              Número de tarjeta (solo demo)
+              <input name="card" [(ngModel)]="card" required pattern="^[0-9]{13,19}$"
+                     placeholder="4111111111111111"
+                     style="display:block;width:100%;padding:8px;border:1px solid #ddd;border-radius:8px">
+              <small *ngIf="f.submitted && !cardValid()">Ingresa 13–19 dígitos.</small>
+            </label>
+
+            <div style="display:flex;gap:12px;margin-top:8px">
+              <label style="flex:1">
+                MM/YY
+                <input name="exp" [(ngModel)]="exp" required pattern="^(0[1-9]|1[0-2])\\/\\d{2}$"
+                       placeholder="12/28"
+                       style="display:block;width:100%;padding:8px;border:1px solid #ddd;border-radius:8px">
+              </label>
+              <label style="flex:1">
+                CVV
+                <input name="cvv" [(ngModel)]="cvv" required pattern="^\\d{3,4}$"
+                       placeholder="123"
+                       style="display:block;width:100%;padding:8px;border:1px solid #ddd;border-radius:8px">
+              </label>
+            </div>
+
+            <button [disabled]="!f.form.valid"
+                    style="margin-top:12px;padding:10px 14px;border-radius:10px;border:1px solid #ccc;cursor:pointer">
+              Pagar Q{{ total() }}
+            </button>
+          </form>
+        </section>
+      </div>
+    </ng-template>

@@ -1,0 +1,36 @@
+<h2>Carrito de compras</h2>
+
+<!-- Mostrar lista de productos -->
+<div *ngIf="items().length; else empty">
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Producto</th>
+        <th>Cantidad</th>
+        <th>Precio unitario</th>
+        <th>Subtotal</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let i of items()">
+        <td>{{ i.product.name }}</td>
+        <td>{{ i.qty }}</td>
+        <td>Q{{ i.product.price }}</td>
+        <td>Q{{ i.product.price * i.qty }}</td>
+        <td><button (click)="remove(i.id)">🗑️</button></td>
+      </tr>
+    </tbody>
+  </table>
+
+
+  <h3 style="margin-top:1rem;">Total: Q{{ total() }}</h3>
+
+  <button (click)="checkout()" style="padding:8px 12px;margin-right:8px;">Finalizar compra</button>
+  <button (click)="clear()" style="padding:8px 12px;">Vaciar carrito</button>
+</div>
+
+<ng-template #empty>
+  <p>Tu carrito está vacío.</p>
+</ng-template>
