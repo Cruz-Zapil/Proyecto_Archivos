@@ -1,15 +1,47 @@
-<a [routerLink]="['/product', product.id]" class="card">
-  <div class="thumb" *ngIf="product.imageUrl; else noimg">
-    <img [src]="product.imageUrl" [alt]="product.name">
-  </div>
-  <ng-template #noimg>
-    <div class="thumb placeholder">Sin imagen</div>
-  </ng-template>
+<a
+  [routerLink]="['/product', product.id]"
+  class="card product-card text-decoration-none h-100"
+>
+  <!-- Imagen / placeholder -->
+  <div class="position-relative">
+    <div class="thumb">
+      <ng-container *ngIf="product.imageUrl; else noimg">
+        <img
+          [src]="product.imageUrl"
+          [alt]="product.name"
+          loading="lazy"
+          class="card-img-top"
+        />
+      </ng-container>
+      <ng-template #noimg>
+        <div class="card-img-top d-grid place-items-center placeholder-thumb">
+          <i class="bi bi-image" aria-hidden="true"></i>
+          <span class="visually-hidden">Sin imagen</span>
+        </div>
+      </ng-template>
+    </div>
 
-  <h3 style="margin:8px 0 4px">{{ product.name }}</h3>
-  <p class="desc" style="color:var(--muted);margin:0">{{ product.description }}</p>
-  <div class="meta" style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
-    <strong>Q{{ product.price }}</strong>
-    <small style="color:var(--muted)">Stock: {{ product.stock }}</small>
+    <!-- Estado de stock -->
+    <span
+      class="badge position-absolute top-0 start-0 m-2 rounded-pill"
+      [ngClass]="product.stock > 0 ? 'text-bg-success' : 'text-bg-danger'"
+    >
+      {{ product.stock > 0 ? 'En stock' : 'Agotado' }}
+    </span>
+  </div>
+
+  <!-- Contenido -->
+  <div class="card-body d-flex flex-column">
+    <h5 class="card-title text-truncate mb-1">{{ product.name }}</h5>
+    <p class="card-text desc text-muted mb-3">
+      {{ product.description }}
+    </p>
+
+    <div class="mt-auto d-flex align-items-center justify-content-between">
+      <strong class="price">
+        {{ product.price | currency:'GTQ':'symbol-narrow':'1.2-2' }}
+      </strong>
+      <small class="text-muted">Stock: {{ product.stock }}</small>
+    </div>
   </div>
 </a>

@@ -1,0 +1,23 @@
+.product-hero {
+  width: 100%;
+  max-width: 520px;
+  aspect-ratio: 1 / 1;
+  display: grid;
+  place-items: center;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-2);
+  }
+}
+
+/* Botón grande con mejor target táctil */
+.btn-lg {
+  padding-top: .9rem;
+  padding-bottom: .9rem;
+}
+
+/* Espaciado en features */
+ul { margin: 0; }

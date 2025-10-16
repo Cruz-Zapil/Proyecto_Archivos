@@ -1,11 +1,53 @@
-<header class="app-header">
-  <a routerLink="/" class="app-brand">ECGT</a>
+<nav class="navbar navbar-expand-lg navbar-blur sticky-top">
+  <div class="container">
 
-  <nav class="app-nav" style="display:flex;gap:12px;font-size:14px;">
-    <a routerLink="/">Catálogo</a>
-    <a routerLink="/cart">
-      Carrito
-      <span class="badge">{{ count() }}</span>
+    <!-- Brand -->
+    <a class="navbar-brand d-flex align-items-center gap-2 app-brand" routerLink="/">
+      <i class="bi bi-bag-heart-fill"></i>
+      <span>ECGT</span>
     </a>
-  </nav>
-</header>
+
+    <!-- Toggler -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+      aria-controls="mainNav" aria-expanded="false" aria-label="Alternar navegación">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Nav -->
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+
+
+        <!-- Catálogo -->
+        <li class="nav-item">
+          <a class="nav-link px-3" routerLink="/" routerLinkActive="active-link">
+            <i class="bi bi-grid me-1"></i> Productos
+          </a>
+        </li>
+
+
+        <!-- Carrito -->
+        <li class="nav-item">
+          <a class="btn btn-outline-light position-relative" routerLink="/cart" routerLinkActive="active-btn">
+            <i class="bi bi-cart3 me-2"></i>
+            Carrito
+            <span *ngIf="count() > 0"
+              class="position-absolute translate-middle badge rounded-pill bg-success cart-badge">
+              {{ count() }}
+              <span class="visually-hidden">artículos en el carrito</span>
+            </span>
+          </a>
+        </li>
+
+        <!-- Inicio de sesión -->
+        <li class="nav-item">
+          <a class="btn btn-outline-light ms-lg-2" routerLink="/login" routerLinkActive="active-btn">
+            <i class="bi bi-person me-2"></i> Iniciar sesión
+          </a>
+        </li>
+
+
+      </ul>
+    </div>
+  </div>
+</nav>

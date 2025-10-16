@@ -1,0 +1,28 @@
+/* Marca con ligero gradiente y mejor legibilidad */
+.app-brand {
+  font-weight: 800;
+  letter-spacing: .3px;
+  span {
+    background: linear-gradient(90deg, var(--brand-primary-500), var(--brand-accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+/* Badge del carrito bien posicionado sobre el botón */
+.cart-badge {
+  top: 0;
+  right: 0;
+  transform: translate(30%, -30%);
+  min-width: 1.5rem;
+  line-height: 1.2;
+}
+
+/* Toggler visible en tema oscuro */
+.navbar-toggler {
+  border-color: rgba(255,255,255,.25);
+}
+
+/* Input de búsqueda con altura cómoda */
+.input-group .form-control { min-height: 44px; }

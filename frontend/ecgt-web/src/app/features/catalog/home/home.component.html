@@ -1,17 +1,67 @@
-  <h2>Catálogo</h2>
+<div class="container my-5">
+  <!-- Encabezado -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <h2 class="section-title m-0">
+      <i class="bi bi-grid-3x3-gap"></i> Productos
+    </h2>
 
-    <input
-      type="search"
-      placeholder="Buscar productos…"
-      [value]="q()"
-      (input)="q.set($any($event.target)?.value)"
-      style="padding:8px;border:1px solid #e5e7eb;border-radius:8px;min-width:260px;"
-    />
+  </div>
 
-    <div class="grid" *ngIf="filtered().length; else empty">
-      <app-product-card *ngFor="let p of filtered()" [product]="p"></app-product-card>
+  <!-- Buscador -->
+  <div class="surface p-3 p-sm-4 mb-4">
+    <div class="row g-3 align-items-center">
+      <div class="col-12 col-md-8">
+        <label for="search" class="form-label mb-1">Buscar productos</label>
+        <div class="input-group">
+          <span class="input-group-text bg-transparent border-end-0">
+            <i class="bi bi-search"></i>
+          </span>
+          <input
+            id="search"
+            type="search"
+            class="form-control border-start-0"
+            placeholder="Escribe un nombre, marca o categoría…"
+            [value]="q()"
+            (input)="q.set($any($event.target)?.value)"
+          />
+        </div>
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label mb-1">Ordenar</label>
+        <select class="form-select">
+          <option value="popular">Populares</option>
+          <option value="price_asc">Precio: menor a mayor</option>
+          <option value="price_desc">Precio: mayor a menor</option>
+          <option value="new">Novedades</option>
+        </select>
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label mb-1">Vista</label>
+        <div class="btn-group w-100" role="group" aria-label="Cambiar vista">
+          <button class="btn btn-outline-light active"><i class="bi bi-grid"></i></button>
+          <button class="btn btn-outline-light"><i class="bi bi-list"></i></button>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <ng-template #empty>
-      <p style="color:#6b7280">No hay productos que coincidan con “{{ q() }}”.</p>
-    </ng-template>
+  <!-- Grid de productos -->
+  <div *ngIf="filtered().length; else empty" class="catalog-grid">
+    <div class="row g-4">
+      <div class="col-6 col-md-4 col-lg-3" *ngFor="let p of filtered()">
+        <app-product-card [product]="p"></app-product-card>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vacío -->
+  <ng-template #empty>
+    <div class="surface p-5 text-center">
+      <div class="display-6 mb-3">🔎</div>
+      <h4 class="mb-2">Sin resultados</h4>
+      <p class="text-muted mb-0">
+        No hay productos que coincidan con “{{ q() }}”.
+      </p>
+    </div>
+  </ng-template>
+</div>

@@ -18,7 +18,7 @@ import { ProductCardComponent } from '../../../shared/ui/product-card.component'
   standalone: true,
   imports: [CommonModule, NgFor, NgIf, ProductCardComponent],
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.css']
+  styleUrls: ['./home.component.scss']
 })
 export class HomeComponent {
 

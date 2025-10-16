@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 
 // imports
 
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { NgIf } from '@angular/common';
 
 import { MockApiService } from '../../mocks/mock-api.service';
@@ -18,9 +18,9 @@ import { CartService } from '../../core/services/cart.service';
 @Component({
   selector: 'app-product',
   standalone: true,
-  imports: [CommonModule, NgIf],
+  imports: [CommonModule, NgIf, RouterLink],
   templateUrl: './product.component.html',
-  styleUrls: ['./product.component.css']
+  styleUrls: ['./product.component.scss']
 })
 export class ProductComponent {
     product = this.api.getProduct(this.route.snapshot.params['id']);

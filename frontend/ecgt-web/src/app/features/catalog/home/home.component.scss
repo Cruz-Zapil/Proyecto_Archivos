@@ -1,0 +1,19 @@
+/* Usa los tokens definidos en styles.scss */
+.catalog-grid {
+  .row > [class*="col-"] {
+    display: grid; /* asegura altura uniforme en tarjetas */
+  }
+}
+
+/* Afinar altura de cards si tu product-card es variable */
+app-product-card {
+  display: block;
+  .card {
+    height: 100%;
+  }
+}
+
+/* Ajustes del buscador */
+.input-group .form-control {
+  min-height: 44px;
+}

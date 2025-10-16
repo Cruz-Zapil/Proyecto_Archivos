@@ -9,8 +9,11 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule, HeaderComponent, RouterOutlet],
   templateUrl: './shell.component.html',
-  styleUrls: ['./shell.component.css']
+  styleUrls: ['./shell.component.scss']
 })
 export class ShellComponent {
+
+   currentYear: number = new Date().getFullYear();
+
 
 }

@@ -15,8 +15,9 @@ import { CartService } from '../../core/services/cart.service';
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './header.component.html',
-  styleUrls: ['./header.component.css']
+  styleUrls: ['./header.component.scss']
 })
+
 export class HeaderComponent {
 
    private cart = inject(CartService);

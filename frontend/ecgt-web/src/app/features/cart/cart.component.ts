@@ -1,6 +1,7 @@
 import { Component, computed } from '@angular/core';
 import { CommonModule, NgFor, NgIf } from '@angular/common';
 import { CartService } from 'src/app/core/services/cart.service';
+import { RouterLink } from '@angular/router';
 
 import { Router } from '@angular/router';
 /**
@@ -13,10 +14,11 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-cart',
   standalone: true,
-  imports: [CommonModule, NgFor, NgIf],
+  imports: [CommonModule, NgFor, NgIf, RouterLink],
   templateUrl: './cart.component.html',
-  styleUrls: ['./cart.component.css']
+  styleUrls: ['./cart.component.scss']
 })
+
 export class CartComponent {
 
    constructor(private cart: CartService, private router: Router) {}

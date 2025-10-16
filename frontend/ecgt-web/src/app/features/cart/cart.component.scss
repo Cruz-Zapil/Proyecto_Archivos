@@ -1,0 +1,37 @@
+/* Aprovecha los tokens definidos en styles.scss (tema oscuro) */
+
+.cart-table {
+  thead.table-head {
+    background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+  }
+  tbody tr:hover {
+    background: rgba(255,255,255,.03);
+  }
+  .thumb {
+    width: 56px; height: 56px; border-radius: .5rem;
+    background: rgba(255,255,255,.06);
+  }
+}
+
+/* Card resumen sticky en desktop */
+.order-summary {
+  border-radius: var(--radius-lg);
+  top: 1rem;
+}
+
+/* Separación de la cabecera principal */
+.section-title i {
+  font-size: 1.25rem;
+}
+
+/* Ajuste del botón eliminar para targets cómodos */
+.btn-outline-danger.btn-sm {
+  padding: .35rem .6rem;
+}
+
+/* Responsive refinements */
+@media (max-width: 576px) {
+  .cart-table td:first-child .text-truncate {
+    max-width: 160px;
+  }
+}

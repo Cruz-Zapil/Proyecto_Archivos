@@ -1,0 +1,154 @@
+/* ===========================
+   1) SASS variables (para Bootstrap)
+   =========================== */
+$brand-bg:            #0b1220;
+$brand-surface:       #121a2a;
+$brand-primary-600:   #4f46e5; /* Indigo 600 */
+$brand-primary-500:   #6366f1;
+$brand-accent:        #22c55e;
+$brand-text:          #e5e7eb;
+$brand-muted:         #94a3b8;
+
+/* Overrides de Bootstrap (DEBEN ser SASS colors, no var(--...)) */
+$primary:             $brand-primary-600;
+$success:             $brand-accent;
+$body-bg:             $brand-bg;
+$body-color:          $brand-text;
+$border-radius:       .75rem;
+$btn-border-radius:   .75rem;
+$card-border-radius:  .875rem;
+$input-border-radius: .75rem;
+$modal-content-bg:    $brand-surface;
+$dropdown-bg:         $brand-surface;
+
+$container-max-widths: (
+  sm: 540px,
+  md: 768px,
+  lg: 1024px,
+  xl: 1180px,
+  xxl: 1340px
+);
+
+/* ===========================
+   2) Importa Bootstrap primero
+   =========================== */
+@import "bootstrap/scss/bootstrap";
+
+/* (Opcional) Bootstrap Icons aquí o en angular.json */
+@import "bootstrap-icons/font/bootstrap-icons.css";
+
+/* ===========================
+   3) CSS variables (para tus estilos en runtime)
+   =========================== */
+:root {
+  --brand-bg:            #{$brand-bg};
+  --brand-surface:       #{$brand-surface};
+  --brand-primary-600:   #{$brand-primary-600};
+  --brand-primary-500:   #{$brand-primary-500};
+  --brand-accent:        #{$brand-accent};
+  --brand-text:          #{$brand-text};
+  --brand-muted:         #{$brand-muted};
+
+  --radius-xl: 1.25rem;
+  --radius-lg: .875rem;
+  --shadow-1: 0 10px 30px rgba(0,0,0,.28);
+  --shadow-2: 0 6px 18px rgba(0,0,0,.22);
+}
+
+/* ===========================
+   4) Estilos globales
+   =========================== */
+html, body { height: 100%; }
+
+body {
+  background:
+    radial-gradient(1200px 800px at 20% -10%, rgba(79,70,229,.15), transparent),
+    radial-gradient(1200px 800px at 120% 10%, rgba(34,197,94,.12), transparent),
+    var(--brand-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.card {
+  background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+  border: 1px solid rgba(255,255,255,.07);
+  box-shadow: var(--shadow-2);
+  .card-header {
+    background: transparent;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, var(--brand-primary-500), var(--brand-primary-600));
+  border: 0;
+  box-shadow: 0 10px 24px rgba(79,70,229,.35);
+}
+.btn-outline-light {
+  border-color: rgba(255,255,255,.24);
+  color: var(--brand-text);
+  &:hover { background: rgba(255,255,255,.08); }
+}
+
+.form-control, .form-select {
+  background-color: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.12);
+  color: var(--brand-text);
+  &:focus {
+    border-color: rgba(99,102,241,.65);
+    box-shadow: 0 0 0 .25rem rgba(99,102,241,.15);
+  }
+}
+
+.badge-soft {
+  background: rgba(99,102,241,.18);
+  color: #c7d2fe;
+  border: 1px solid rgba(99,102,241,.28);
+}
+
+.navbar-blur {
+  background: rgba(255,255,255,.03);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
+
+.surface {
+  background: var(--brand-surface);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+}
+
+a { color: var(--brand-text); }
+a:hover { color: #cbd5e1; }
+
+/* E-commerce helpers */
+.product-card {
+  transition: transform .18s ease, box-shadow .18s ease;
+  &:hover { transform: translateY(-4px); box-shadow: var(--shadow-1); }
+  .card-img-top {
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-top-left-radius: var(--radius-lg);
+    border-top-right-radius: var(--radius-lg);
+  }
+}
+.price { color: var(--brand-accent); font-weight: 700; font-size: 1.125rem; }
+.badge-instock    { @extend .badge; @extend .rounded-pill; @extend .text-bg-success; }
+.badge-outofstock { @extend .badge; @extend .rounded-pill; @extend .text-bg-danger; }
+.btn-wishlist { @extend .btn; @extend .btn-light; border-radius: 999px; background: rgba(255,255,255,.9); color: #111827; }
+.section-title { display:flex; align-items:center; gap:.75rem; font-weight:700; margin-bottom:1rem; }
+
+.container-narrow { max-width: 920px; }
+
+.skeleton {
+  position: relative; overflow: hidden; background: rgba(255,255,255,.06);
+  border-radius: .5rem; min-height: 1.25rem;
+  &::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent);
+    animation: shimmer 1.2s infinite; transform: translateX(-100%);
+  }
+}
+@keyframes shimmer { 100% { transform: translateX(100%);} }
+::selection { background: rgba(79,70,229,.4); color: white; }

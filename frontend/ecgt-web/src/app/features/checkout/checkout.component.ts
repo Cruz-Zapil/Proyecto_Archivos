@@ -19,7 +19,7 @@ import { CartService } from '../../core/services/cart.service';
   standalone: true,
   imports: [CommonModule, FormsModule, NgFor, NgIf],
   templateUrl: './checkout.component.html',
-  styleUrls: ['./checkout.component.css']
+  styleUrls: ['./checkout.component.scss']
 })
 export class CheckoutComponent {
 

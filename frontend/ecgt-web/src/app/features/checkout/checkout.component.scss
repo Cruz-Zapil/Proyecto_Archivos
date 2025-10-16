@@ -1,0 +1,40 @@
+/* Ajustes visuales del checkout */
+.order-summary {
+  border-radius: var(--radius-lg);
+  top: 1rem; /* sticky */
+}
+
+.list-group-item {
+  border-color: rgba(255,255,255,.08);
+}
+
+input.form-control::placeholder {
+  color: rgba(229,231,235,.6);
+}
+
+/* Botón grande más cómodo al tacto */
+.btn-lg {
+  padding-top: .9rem;
+  padding-bottom: .9rem;
+}
+
+/* Input group sutil */
+.input-group-text {
+  border-right: 0;
+}
+.form-control.border-start-0 {
+  border-left: 0;
+}
+
+/* Mejora enfoque accesible */
+.form-control:focus {
+  border-color: rgba(99,102,241,.65);
+  box-shadow: 0 0 0 .25rem rgba(99,102,241,.15);
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  .order-summary {
+    position: static !important;
+  }
+}

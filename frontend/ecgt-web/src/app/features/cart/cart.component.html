@@ -1,36 +1,104 @@
-<h2>Carrito de compras</h2>
+<div class="container my-5">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <h2 class="section-title m-0">
+      <i class="bi bi-cart3"></i> Carrito de compras
+    </h2>
+    <a routerLink="/" class="btn btn-outline-light btn-sm">
+      <i class="bi bi-arrow-left me-1"></i> Seguir comprando
+    </a>
+  </div>
 
-<!-- Mostrar lista de productos -->
-<div *ngIf="items().length; else empty">
+  <!-- Estado vacío -->
+  <ng-template #empty>
+    <div class="surface p-5 text-center">
+      <div class="display-6 mb-3">🛒</div>
+      <h4 class="mb-2">Tu carrito está vacío</h4>
+      <p class="text-muted mb-4">Cuando agregues productos aparecerán aquí.</p>
+      <a routerLink="/" class="btn btn-primary">
+        <i class="bi bi-bag-plus me-2"></i> Explorar productos
+      </a>
+    </div>
+  </ng-template>
 
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Producto</th>
-        <th>Cantidad</th>
-        <th>Precio unitario</th>
-        <th>Subtotal</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let i of items()">
-        <td>{{ i.product.name }}</td>
-        <td>{{ i.qty }}</td>
-        <td>Q{{ i.product.price }}</td>
-        <td>Q{{ i.product.price * i.qty }}</td>
-        <td><button (click)="remove(i.id)">🗑️</button></td>
-      </tr>
-    </tbody>
-  </table>
+  <!-- Lista de items -->
+  <div *ngIf="items().length; else empty" class="row g-4">
+    <div class="col-12 col-lg-8">
+      <div class="table-responsive surface p-0">
+        <table class="table table-hover align-middle mb-0 cart-table">
+          <thead class="table-head">
+            <tr>
+              <th scope="col">Producto</th>
+              <th scope="col" class="text-center">Cantidad</th>
+              <th scope="col" class="text-end">Precio</th>
+              <th scope="col" class="text-end">Subtotal</th>
+              <th scope="col" class="text-end"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let i of items()">
+              <td>
+                <div class="d-flex align-items-center gap-3">
+                  <div class="thumb skeleton" aria-hidden="true"></div>
+                  <div>
+                    <div class="fw-semibold text-truncate">{{ i.product.name }}</div>
+                    <small class="text-muted">ID: {{ i.id | slice:0:8 }}</small>
+                  </div>
+                </div>
+              </td>
+              <td class="text-center">
+                <span class="badge rounded-pill bg-light text-dark px-3 py-2">{{ i.qty }}</span>
+              </td>
+              <td class="text-end">
+                {{ i.product.price | currency:'GTQ':'symbol-narrow':'1.2-2' }}
+              </td>
+              <td class="text-end">
+                {{ (i.product.price * i.qty) | currency:'GTQ':'symbol-narrow':'1.2-2' }}
+              </td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-outline-danger" (click)="remove(i.id)" aria-label="Eliminar del carrito">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="d-flex justify-content-between mt-3">
+        <button class="btn btn-outline-light" (click)="clear()">
+          <i class="bi bi-trash3 me-2"></i> Vaciar carrito
+        </button>
+      </div>
+    </div>
 
+    <!-- Resumen -->
+    <div class="col-12 col-lg-4">
+      <div class="surface p-4 position-sticky top-3 order-summary">
+        <h5 class="mb-3">Resumen</h5>
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted">Artículos</span>
+          <span class="fw-semibold">{{ items().length }}</span>
+        </div>
+        <div class="d-flex justify-content-between mb-3">
+          <span class="text-muted">Envío</span>
+          <span class="fw-semibold">Calculado al pagar</span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center py-3 border-top border-bottom mb-3">
+          <span class="fw-semibold">Total</span>
+          <span class="fs-4 price">{{ total() | currency:'GTQ':'symbol-narrow':'1.2-2' }}</span>
+        </div>
 
-  <h3 style="margin-top:1rem;">Total: Q{{ total() }}</h3>
+        <button class="btn btn-primary w-100 mb-2" (click)="checkout()">
+          <i class="bi bi-credit-card me-2"></i> Finalizar compra
+        </button>
+        <a routerLink="/catalog" class="btn btn-outline-light w-100">
+          Seguir comprando
+        </a>
 
-  <button (click)="checkout()" style="padding:8px 12px;margin-right:8px;">Finalizar compra</button>
-  <button (click)="clear()" style="padding:8px 12px;">Vaciar carrito</button>
+        <div class="d-flex align-items-center gap-2 mt-3 text-muted small">
+          <i class="bi bi-shield-check"></i>
+          <span>Pago seguro y cifrado</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-
-<ng-template #empty>
-  <p>Tu carrito está vacío.</p>
-</ng-template>

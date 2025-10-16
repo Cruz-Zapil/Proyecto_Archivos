@@ -1,14 +1,86 @@
- <ng-container *ngIf="product; else notFound">
-      <h2>{{ product.name }}</h2>
-      <p>{{ product.description }}</p>
-      <p><strong>Precio: Q{{ product.price }}</strong></p>
-      <p><small>Stock: {{ product.stock }}</small></p>
+<div class="container my-5">
+  <ng-container *ngIf="product; else notFound">
+    <div class="row g-4 align-items-start">
+      <!-- Imagen / thumbnail -->
+      <div class="col-12 col-md-6">
+        <div class="surface p-3 p-sm-4 h-100 d-flex align-items-center justify-content-center">
+          <div class="product-hero">
+            <img
+              [src]="product.imageUrl || 'https://via.placeholder.com/640x640?text=Producto'"
+              [alt]="product.name"
+              loading="lazy"
+              class="img-fluid rounded"
+            />
+          </div>
+        </div>
+      </div>
 
-      <button (click)="addToCart()" style="padding:8px 12px;border-radius:8px;border:1px solid #ccc;">
-        🛒 Agregar al carrito
-      </button>
-    </ng-container>
+      <!-- Info -->
+      <div class="col-12 col-md-6">
+        <div class="surface p-4">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <h2 class="m-0">{{ product.name }}</h2>
+            <span
+              class="badge"
+              [ngClass]="product.stock > 0 ? 'text-bg-success' : 'text-bg-danger'">
+              {{ product.stock > 0 ? 'En stock' : 'Agotado' }}
+            </span>
+          </div>
 
-    <ng-template #notFound>
-      <p>Producto no encontrado.</p>
-    </ng-template>
+          <p class="text-muted mb-3">{{ product.description }}</p>
+
+          <div class="d-flex align-items-center justify-content-between py-3 border-top border-bottom mb-3">
+            <div>
+              <div class="text-muted small">Precio</div>
+              <div class="price fs-3 m-0">
+                {{ product.price | currency:'GTQ':'symbol-narrow':'1.2-2' }}
+              </div>
+            </div>
+            <div class="text-end">
+              <div class="text-muted small">Stock</div>
+              <div class="fw-semibold">{{ product.stock }}</div>
+            </div>
+          </div>
+
+          <div class="d-grid gap-2">
+
+
+
+            <button class="btn btn-primary btn-lg" (click)="addToCart()">
+              <i class="bi bi-bag-plus me-2"></i> Agregar al carrito
+            </button>
+
+
+            <a routerLink="/" class="btn btn-outline-light">
+              <i class="bi bi-arrow-left me-2"></i> Regresar al inicio
+            </a>
+
+
+          </div>
+
+          <!-- Beneficios/seguridad -->
+          <ul class="list-unstyled d-flex gap-4 mt-4 text-muted small">
+            <li class="d-flex align-items-center gap-2">
+              <i class="bi bi-shield-check"></i> Pago seguro
+            </li>
+            <li class="d-flex align-items-center gap-2">
+              <i class="bi bi-truck"></i> Envíos a todo el país
+            </li>
+            <li class="d-flex align-items-center gap-2">
+              <i class="bi bi-arrow-repeat"></i> Devolución 7 días
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #notFound>
+    <div class="surface p-5 text-center">
+      <div class="display-6 mb-3">🧭</div>
+      <h4 class="mb-2">Producto no encontrado</h4>
+      <p class="text-muted mb-4">Es posible que la URL haya cambiado o el producto ya no exista.</p>
+      <a routerLink="/catalog" class="btn btn-primary">Volver al catálogo</a>
+    </div>
+  </ng-template>
+</div>
