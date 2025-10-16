@@ -7,5 +7,9 @@ export interface User {
   email: string;
   fullName: string;
   role: Role;
+
+  phone ?: string;
+  address ?: string;
+
   token?: string; // JWT real después
 }

@@ -1,0 +1,115 @@
+<div class="container py-5 d-flex justify-content-center align-items-center">
+  <div class="surface p-4 p-md-5 w-100" style="max-width: 520px;">
+    <div class="text-center mb-4">
+      <i class="bi bi-person-plus display-5 text-primary"></i>
+      <h2 class="fw-bold mt-2 mb-1">Crear cuenta</h2>
+      <p class="text-muted small mb-0">Completa tus datos para registrarte</p>
+    </div>
+
+    <form (ngSubmit)="submit()" #f="ngForm" novalidate>
+      <!-- Nombre -->
+      <div class="mb-3">
+        <label for="name" class="form-label">Nombre completo</label>
+        <input
+          id="name"
+          name="name"
+          class="form-control"
+          [(ngModel)]="fullName"
+          required
+          placeholder="Nombre y apellido"
+        />
+        <div *ngIf="f.submitted && !fullName" class="form-text text-danger">
+          Este campo es obligatorio.
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="mb-3">
+        <label for="email" class="form-label">Correo electrónico</label>
+        <input
+          id="email"
+          name="email"
+          class="form-control"
+          [(ngModel)]="email"
+          required
+          type="email"
+          placeholder="ejemplo@correo.com"
+        />
+        <div *ngIf="f.submitted && !email" class="form-text text-danger">
+          Ingresa un correo válido.
+        </div>
+      </div>
+
+      <!-- Teléfono -->
+      <div class="mb-3">
+        <label for="phone" class="form-label">Número de teléfono</label>
+        <input
+          id="phone"
+          name="phone"
+          class="form-control"
+          ngModel
+          required
+          inputmode="tel"
+          pattern="^\+?\d{8,12}$"
+          placeholder="+502 55555555"
+        />
+        <div *ngIf="f.submitted && f.form.controls['phone']?.invalid" class="form-text text-danger">
+          Ingresa de 8 a 12 dígitos (puede iniciar con +).
+        </div>
+      </div>
+
+      <!-- Dirección -->
+      <div class="mb-3">
+        <label for="address" class="form-label">Dirección</label>
+        <textarea
+          id="address"
+          name="address"
+          class="form-control"
+          ngModel
+          required
+          rows="2"
+          placeholder="Zona, colonia, referencia de entrega"
+        ></textarea>
+        <div *ngIf="f.submitted && f.form.controls['address']?.invalid" class="form-text text-danger">
+          La dirección es obligatoria.
+        </div>
+      </div>
+
+      <!-- Contraseña -->
+      <div class="mb-3">
+        <label for="password" class="form-label">Contraseña</label>
+        <input
+          id="password"
+          name="password"
+          class="form-control"
+          [(ngModel)]="password"
+          required
+          type="password"
+          minlength="6"
+          placeholder="Mínimo 6 caracteres"
+        />
+        <div *ngIf="f.submitted && (!password || (password && password.length < 6))" class="form-text text-danger">
+          La contraseña debe tener al menos 6 caracteres.
+        </div>
+      </div>
+
+      <!-- Botón -->
+      <button
+        type="submit"
+        class="btn btn-primary w-100 py-2 fw-semibold"
+        [disabled]="!f.form.valid"
+      >
+        <i class="bi bi-person-check me-2"></i> Crear cuenta
+      </button>
+
+      <div class="text-center mt-3">
+        <p class="text-muted mb-0">
+          ¿Ya tienes cuenta?
+          <a routerLink="/login" class="text-primary fw-semibold text-decoration-none">
+            Inicia sesión
+          </a>
+        </p>
+      </div>
+    </form>
+  </div>
+</div>
