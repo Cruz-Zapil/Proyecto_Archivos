@@ -1,0 +1,40 @@
+<form (ngSubmit)="$event.preventDefault()" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr; gap:8px; align-items:end">
+    <label>
+      Búsqueda
+      <input type="search" [(ngModel)]="q" name="q" placeholder="Nombre o descripción">
+    </label>
+
+    <label>
+      Mín Q
+      <input type="number" [(ngModel)]="min" name="min" min="0" step="0.01">
+    </label>
+
+    <label>
+      Máx Q
+      <input type="number" [(ngModel)]="max" name="max" min="0" step="0.01">
+    </label>
+
+    <label>
+      Condición
+      <select [(ngModel)]="cond" name="cond">
+        <option value="">Todas</option>
+        <option value="NEW">Nuevo</option>
+        <option value="USED">Usado</option>
+      </select>
+    </label>
+
+    <label>
+      Ordenar
+      <select [(ngModel)]="sort" name="sort">
+        <option value="priceAsc">Precio ↑</option>
+        <option value="priceDesc">Precio ↓</option>
+        <option value="nameAsc">Nombre A-Z</option>
+        <option value="nameDesc">Nombre Z-A</option>
+      </select>
+    </label>
+  </form>
+
+  <div style="margin-top:6px; display:flex; gap:8px">
+    <button (click)="emit()">Aplicar</button>
+    <button (click)="reset()">Limpiar</button>
+  </div>

@@ -1,5 +1,6 @@
-import { HttpInterceptorFn } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
+import { inject } from '@angular/core';
+import { HttpInterceptorFn, HttpRequest } from '@angular/common/http';
+import { AuthService } from '../services/auth.service';
 
 /**
  * Interceptor global:
@@ -8,18 +9,16 @@ import { environment } from '../../../environments/environment';
  * - Punto único para manejar errores globales (401, 403, etc.).
  */
 export const apiInterceptor: HttpInterceptorFn = (req, next) => {
-  // Si la URL ya es absoluta (http/https), la respetamos.
-  const absolute = /^https?:\/\//i.test(req.url);
-  const url = absolute ? req.url : `${environment.api}${req.url}`;
+  const auth = inject(AuthService);
+  const token = auth.token;
 
-  // Token (luego lo pondremos desde AuthService)
-  const token = localStorage.getItem('token');
+  // Adjunta Authorization si hay token
+  let clone: HttpRequest<any> = req;
+  if (token) {
+    clone = req.clone({
+      setHeaders: { Authorization: `Bearer ${token}` }
+    });
+  }
 
-  // Clonamos la request con la nueva URL y, si procede, el header Authorization
-  const authReq = token
-    ? req.clone({ url, setHeaders: { Authorization: `Bearer ${token}` } })
-    : req.clone({ url });
-
-  // Aquí podrías encadenar manejo de errores con .pipe(catchError(...))
-  return next(authReq);
+  return next(clone);
 };

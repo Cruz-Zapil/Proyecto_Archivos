@@ -34,7 +34,7 @@ export class ProductComponent {
         product: this.product,
         qty: 1
       });
-      alert(`${this.product.name} agregado al carrito 🛒`);
+      alert(`${this.product.nombre} agregado al carrito 🛒`);
     }
   }
 

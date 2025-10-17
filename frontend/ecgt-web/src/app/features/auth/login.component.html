@@ -6,7 +6,7 @@
       <p class="text-muted small mb-0">Accede con tu cuenta para continuar</p>
     </div>
 
-    <form (ngSubmit)="submit()" #f="ngForm" novalidate>
+    <form (ngSubmit)="submit(f)" #f="ngForm" novalidate>
       <!-- Email -->
       <div class="mb-3">
         <label for="email" class="form-label">Correo electrónico</label>

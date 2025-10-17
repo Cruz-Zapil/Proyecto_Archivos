@@ -1,0 +1,137 @@
+
+digraph ERD_Chen {
+  graph [splines=true, overlap=false, rankdir=LR, fontname="Helvetica"];
+  node  [shape=box, fontname="Helvetica", style=rounded];
+  edge  [fontname="Helvetica"];
+
+  // --- Entity nodes (rectangles) ---
+  app_user       [label=<<B>APP_USER</B><BR ALIGN="LEFT"/><FONT POINT-SIZE="10"><U>id</U>, nombre, email, telefono, role, is_active, created_at</FONT>>];
+  address        [label=<<B>ADDRESS</B><BR ALIGN="LEFT"/><FONT POINT-SIZE="10"><U>id</U>, user_id, linea1, linea2, ciudad, departamento, referencia, is_default, created_at</FONT>>];
+  saved_card     [label=<<B>SAVED_CARD</B><BR ALIGN="LEFT"/><FONT POINT-SIZE="10"><U>id</U>, user_id, brand, last4, token, holder_name, exp_month, exp_year, created_at</FONT>>];
+  product        [label=<<B>PRODUCT</B><BR ALIGN="LEFT"/><FONT POINT-SIZE="10"><U>id</U>, seller_id, nombre, descripcion, precio, stock, condicion, categoria, cover_image_url, is_active, created_at, updated_at</FONT>>];
+  product_image  [label=<<B>PRODUCT_IMAGE</B><BR ALIGN="LEFT"/><FONT POINT-SIZE="10"><U>id</U>, product_id, url, orden</FONT>>];
+  product_mod    [label=<<B>PRODUCT_MODERATION</B><BR ALIGN="LEFT"/><FONT POINT-SIZE="10"><U>id</U>, product_id, submitted_by, status, motivo, reviewed_by, created_at, reviewed_at</FONT>>];
+  cart           [label=<<B>CART</B><BR ALIGN="LEFT"/><FONT POINT-SIZE="10"><U>id</U>, user_id, status, created_at, updated_at</FONT>>];
+  cart_item      [label=<<B>CART_ITEM</B><BR ALIGN="LEFT"/><FONT POINT-SIZE="10"><U>id</U>, cart_id, product_id, qty, unit_price, created_at</FONT>>];
+  purchase_order [label=<<B>PURCHASE_ORDER</B><BR ALIGN="LEFT"/><FONT POINT-SIZE="10"><U>id</U>, user_id, status, order_total, ordered_at, promised_delivery, delivered_at, shipping_address_id</FONT>>];
+  order_item     [label=<<B>ORDER_ITEM</B><BR ALIGN="LEFT"/><FONT POINT-SIZE="10"><U>id</U>, order_id, product_id, seller_id, qty, unit_price, line_total, seller_amount, platform_fee</FONT>>];
+  fulfillment    [label=<<B>FULFILLMENT</B><BR ALIGN="LEFT"/><FONT POINT-SIZE="10"><U>id</U>, order_id, assigned_to, notes, updated_at</FONT>>];
+  payment        [label=<<B>PAYMENT</B><BR ALIGN="LEFT"/><FONT POINT-SIZE="10"><U>id</U>, order_id, user_id, amount, status, gateway_ref, saved_card_id, created_at, paid_at</FONT>>];
+  product_review [label=<<B>PRODUCT_REVIEW</B><BR ALIGN="LEFT"/><FONT POINT-SIZE="10"><U>id</U>, order_item_id, product_id, user_id, rating, comment, created_at</FONT>>];
+  sanction       [label=<<B>SANCTION</B><BR ALIGN="LEFT"/><FONT POINT-SIZE="10"><U>id</U>, user_id, imposed_by, motivo, is_active, created_at, lifted_at</FONT>>];
+  notification   [label=<<B>NOTIFICATION</B><BR ALIGN="LEFT"/><FONT POINT-SIZE="10"><U>id</U>, user_id, type, subject, body, meta, sent_at</FONT>>];
+  email_queue    [label=<<B>EMAIL_QUEUE</B><BR ALIGN="LEFT"/><FONT POINT-SIZE="10"><U>id</U>, notification_id, status, last_error, updated_at</FONT>>];
+
+  // --- Relationship nodes (diamonds) ---
+  node [shape=diamond, style=solid, color=gray20];
+
+  r_user_address    [label="TIENE"];
+  r_user_card       [label="ALMACENA"];
+  r_user_product    [label="VENDE"];
+  r_product_images  [label="POSEE"];
+  r_product_mod     [label="MODERA"];
+  r_user_cart       [label="USA"];
+  r_cart_items      [label="CONTIENTE"];
+  r_cart_product    [label="SELECCIONA"];
+  r_order_user      [label="REALIZA"];
+  r_order_items     [label="INCLUYE"];
+  r_item_product    [label="DE"];
+  r_item_seller     [label="VENDIDO_POR"];
+  r_order_fulfill   [label="CUMPLE"];
+  r_order_payment   [label="PAGA"];
+  r_payment_card    [label="USA_TARJETA"];
+  r_review_item     [label="CALIFICA"];
+  r_review_user     [label="ESCRIBE"];
+  r_sanction_user   [label="SANCIONA"];
+  r_notify_user     [label="NOTIFICA_A"];
+  r_queue_notif     [label="EN_COLA"];
+
+  // --- Back to entity shape for entities going forward ---
+  node [shape=box, style=rounded, color=black];
+
+  // --- Edges with cardinalities (Chen uses role names; we add (1,N) labels) ---
+  // app_user -- address (1:N)
+  app_user -> r_user_address [label="1"];
+  r_user_address -> address  [label="N"];
+
+  // app_user -- saved_card (1:N)
+  app_user -> r_user_card [label="1"];
+  r_user_card -> saved_card [label="N"];
+
+  // app_user (seller) -- product (1:N)
+  app_user -> r_user_product [label="1 (seller)"];
+  r_user_product -> product  [label="N"];
+
+  // product -- product_image (1:N)
+  product -> r_product_images [label="1"];
+  r_product_images -> product_image [label="N"];
+
+  // product -- product_moderation (1:N); app_user participates as submitted_by and reviewed_by
+  product -> r_product_mod [label="1"];
+  r_product_mod -> product_mod [label="N"];
+  app_user -> r_product_mod [label="N (submitted_by / reviewed_by)"];
+
+  // app_user -- cart (1:N)
+  app_user -> r_user_cart [label="1"];
+  r_user_cart -> cart [label="N"];
+
+  // cart -- cart_item (1:N)
+  cart -> r_cart_items [label="1"];
+  r_cart_items -> cart_item [label="N"];
+
+  // cart_item -- product (N:1)
+  cart_item -> r_cart_product [label="N"];
+  r_cart_product -> product [label="1"];
+
+  // app_user -- purchase_order (1:N)
+  app_user -> r_order_user [label="1"];
+  r_order_user -> purchase_order [label="N"];
+
+  // purchase_order -- order_item (1:N)
+  purchase_order -> r_order_items [label="1"];
+  r_order_items -> order_item [label="N"];
+
+  // order_item -- product (N:1)
+  order_item -> r_item_product [label="N"];
+  r_item_product -> product [label="1"];
+
+  // order_item -- seller (N:1 to app_user)
+  order_item -> r_item_seller [label="N"];
+  r_item_seller -> app_user [label="1 (seller)"];
+
+  // purchase_order -- fulfillment (1:1 optional)
+  purchase_order -> r_order_fulfill [label="1"];
+  r_order_fulfill -> fulfillment [label="0..1"];
+
+  // purchase_order -- payment (1:1)
+  purchase_order -> r_order_payment [label="1"];
+  r_order_payment -> payment [label="1"];
+
+  // payment -- saved_card (N:0..1)
+  payment -> r_payment_card [label="N"];
+  r_payment_card -> saved_card [label="0..1"];
+
+  // product_review -- order_item (1:1; cada ítem puede recibir 0..1 review)
+  order_item -> r_review_item [label="1"];
+  r_review_item -> product_review [label="0..1"];
+
+  // product_review -- app_user (N:1 autor)
+  app_user -> r_review_user [label="1"];
+  r_review_user -> product_review [label="N"];
+
+  // sanction -- user (N:1), imposed_by -> app_user
+  app_user -> r_sanction_user [label="1 (afectado)"];
+  r_sanction_user -> sanction [label="N"];
+  sanction -> app_user [label="1 (imposed_by)"];
+
+  // notification -- user (N:1)
+  app_user -> r_notify_user [label="1"];
+  r_notify_user -> notification [label="N"];
+
+  // email_queue -- notification (1:1)
+  notification -> r_queue_notif [label="1"];
+  r_queue_notif -> email_queue [label="0..1"];
+
+  // Aesthetics
+  {rank=same; app_user; product; purchase_order;}
+}

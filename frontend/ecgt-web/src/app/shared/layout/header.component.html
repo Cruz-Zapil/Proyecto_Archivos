@@ -23,7 +23,6 @@
         class="nav-link px-3"
         routerLink="/"
         routerLinkActive="active-link"
-        [routerLinkActiveOptions]="{ exact: true }"
       >
         <i class="bi bi-grid me-1"></i> Productos
       </a>
@@ -38,13 +37,6 @@
       >
         <i class="bi bi-cart3 me-2"></i>
         Carrito
-        <span
-          *ngIf="count() > 0"
-          class="position-absolute translate-middle badge rounded-pill bg-success cart-badge"
-        >
-          {{ count() }}
-          <span class="visually-hidden">artículos en el carrito</span>
-        </span>
       </a>
     </li>
 
@@ -59,15 +51,15 @@
           <span class="avatar-circle">
             <i class="bi bi-person"></i>
           </span>
-          <span class="d-none d-sm-inline text-truncate auth-name" title="{{ user()!.fullName }}">
-            {{ user()!.fullName }}
+          <span class="d-none d-sm-inline text-truncate auth-name" title="{{ $any(user()).fullName }}">
+            {{ $any(user()).fullName }}
           </span>
           <i class="bi bi-caret-down-fill small opacity-75"></i>
         </button>
         <ul class="dropdown-menu dropdown-menu-end shadow-sm">
           <li>
             <span class="dropdown-item-text text-muted small">
-              Hola, <strong>{{ user()!.fullName }}</strong>
+              Hola, <strong>{{ $any(user()).nombre }}</strong>
             </span>
           </li>
           <li><hr class="dropdown-divider"></li>

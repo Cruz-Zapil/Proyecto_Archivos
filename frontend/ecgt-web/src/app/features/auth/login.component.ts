@@ -1,9 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { FormsModule, NgForm } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 
 
 /**
@@ -19,15 +18,34 @@ import { AuthService } from '../../core/services/auth.service';
 })
 export class LoginComponent {
 
-    email = '';
+  private auth = inject(AuthService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
+  email = '';
   password = '';
+  loading = false;
+  error = '';
 
-  constructor(private auth: AuthService, private router: Router) {}
+  submit(form: NgForm) {
+    if (form.invalid) return;
+    this.loading = true;
+    this.error = '';
 
-  submit() {
-    this.auth.login(this.email, this.password);
-    this.router.navigateByUrl('/');
+    this.auth.login({ email: this.email, password: this.password })
+      .subscribe({
+        next: (res) => {
+          // Persistimos sesión y redirigimos
+          this.auth.completeLoginFlow(res);
+          const redirect = this.route.snapshot.queryParamMap.get('redirect') ?? '/';
+          this.router.navigateByUrl(redirect);
+        },
+        error: (e) => {
+          this.error = e?.error?.message ?? 'Credenciales inválidas';
+          this.loading = false;
+        },
+        complete: () => this.loading = false
+      });
   }
-
 
 }

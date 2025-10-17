@@ -6,7 +6,7 @@
       <p class="text-muted small mb-0">Completa tus datos para registrarte</p>
     </div>
 
-    <form (ngSubmit)="submit()" #f="ngForm" novalidate>
+    <form (ngSubmit)="submit(f)" #f="ngForm" novalidate>
       <!-- Nombre -->
       <div class="mb-3">
         <label for="name" class="form-label">Nombre completo</label>
@@ -14,11 +14,11 @@
           id="name"
           name="name"
           class="form-control"
-          [(ngModel)]="fullName"
+          [(ngModel)]="name"
           required
           placeholder="Nombre y apellido"
         />
-        <div *ngIf="f.submitted && !fullName" class="form-text text-danger">
+        <div *ngIf="f.submitted && !name" class="form-text text-danger">
           Este campo es obligatorio.
         </div>
       </div>

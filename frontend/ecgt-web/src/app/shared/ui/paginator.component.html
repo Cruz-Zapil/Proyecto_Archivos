@@ -1,0 +1,5 @@
+  <div *ngIf="pages > 1" style="display:flex;gap:8px;align-items:center;margin-top:12px">
+    <button (click)="go(page-1)" [disabled]="page<=1">Anterior</button>
+    <span>Página {{page}} / {{pages}}</span>
+    <button (click)="go(page+1)" [disabled]="page>=pages">Siguiente</button>
+  </div>

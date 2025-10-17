@@ -1,10 +1,7 @@
-import { Component, computed, inject } from '@angular/core';
-
+import { Component, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CartService } from '../../core/services/cart.service';
-
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
-import { RouterLink, RouterLinkActive } from '@angular/router';
 
 /**
  * Header con links básicos y un badge que muestra
@@ -14,19 +11,21 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterLink,  RouterLinkActive,],
+  imports: [CommonModule, RouterLink, ],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss']
 })
 
 export class HeaderComponent {
 
-   private cart = inject(CartService);
-   private auth = inject(AuthService);
+  private auth = inject(AuthService);
 
-  // total de unidades (no de líneas)
-  count = computed(() => this.cart.items().reduce((n, i) => n + i.qty, 0));
-  user  = this.auth.user;
+  user = this.auth.user;
+  isLoggedIn = this.auth.isLoggedIn;
+  isCommon = computed(() => this.auth.hasAnyRole(['COMUN']));
+  isModerator = computed(() => this.auth.hasAnyRole(['MODERADOR']));
+  isLogistics = computed(() => this.auth.hasAnyRole(['LOGISTICA']));
+  isAdmin = computed(() => this.auth.hasAnyRole(['ADMIN']));
 
   logout() { this.auth.logout(); }
 }

@@ -4,10 +4,9 @@
     <h2 class="section-title m-0">
       <i class="bi bi-grid-3x3-gap"></i> Productos
     </h2>
-
   </div>
 
-  <!-- Buscador -->
+  <!-- Buscador + Orden -->
   <div class="surface p-3 p-sm-4 mb-4">
     <div class="row g-3 align-items-center">
       <div class="col-12 col-md-8">
@@ -22,36 +21,63 @@
             class="form-control border-start-0"
             placeholder="Escribe un nombre, marca o categoría…"
             [value]="q()"
-            (input)="q.set($any($event.target)?.value)"
+            (input)="onSearch($any($event.target)?.value)"
           />
         </div>
       </div>
+
       <div class="col-6 col-md-2">
         <label class="form-label mb-1">Ordenar</label>
-        <select class="form-select">
+        <select class="form-select"
+                [value]="sort()"
+                (change)="onSort($any($event.target)?.value)">
           <option value="popular">Populares</option>
           <option value="price_asc">Precio: menor a mayor</option>
           <option value="price_desc">Precio: mayor a menor</option>
           <option value="new">Novedades</option>
         </select>
       </div>
+
       <div class="col-6 col-md-2">
         <label class="form-label mb-1">Vista</label>
         <div class="btn-group w-100" role="group" aria-label="Cambiar vista">
           <button class="btn btn-outline-light active"><i class="bi bi-grid"></i></button>
-          <button class="btn btn-outline-light"><i class="bi bi-list"></i></button>
+          <button class="btn btn-outline-light" disabled><i class="bi bi-list"></i></button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Grid de productos -->
-  <div *ngIf="filtered().length; else empty" class="catalog-grid">
+  <!-- Grid de productos (paginado) -->
+  <div *ngIf="paged().length; else empty" class="catalog-grid">
     <div class="row g-4">
-      <div class="col-6 col-md-4 col-lg-3" *ngFor="let p of filtered()">
+      <div class="col-6 col-md-4 col-lg-3" *ngFor="let p of paged()">
         <app-product-card [product]="p"></app-product-card>
       </div>
     </div>
+
+    <!-- Paginación Bootstrap-like sencilla -->
+    <nav class="mt-4" aria-label="Paginación">
+      <ul class="pagination justify-content-center mb-0">
+        <li class="page-item" [class.disabled]="page() <= 1">
+          <button class="page-link" (click)="go(page()-1)" aria-label="Anterior">
+            <span aria-hidden="true">&laquo;</span>
+          </button>
+        </li>
+
+        <li class="page-item disabled">
+          <span class="page-link">
+            Página {{ page() }} / {{ pages() }}
+          </span>
+        </li>
+
+        <li class="page-item" [class.disabled]="page() >= pages()">
+          <button class="page-link" (click)="go(page()+1)" aria-label="Siguiente">
+            <span aria-hidden="true">&raquo;</span>
+          </button>
+        </li>
+      </ul>
+    </nav>
   </div>
 
   <!-- Vacío -->
