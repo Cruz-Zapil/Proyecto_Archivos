@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { MOCK_PRODUCTS } from './mock-data';
 import { Product } from '../core/models/product';
+import { Order } from '../core/models/orden';
 
 /**
  * MockApiService emula respuestas de backend.
@@ -65,7 +66,65 @@ export class MockApiService {
   deleteProduct(id: string): boolean {
     const before = this.products().length;
     this.products.set(this.products().filter(p => p.id !== id));
-    return this.products.length < before;
+    return this.products().length < before;
+  }
+
+
+  // ---------- Pedidos (nuevo: logística)
+  private orders: Order[] = [
+    {
+      id: 'o1',
+      orderNumber: 'EC-2025-0001',
+      customerName: 'María López',
+      items: [
+        { product: this.products()[0], qty: 1, price: this.products()[0].price },
+        { product: this.products()[2], qty: 2, price: this.products()[2].price }
+      ],
+      total: this.products()[0].price * 1 + this.products()[2].price * 2,
+      status: 'IN_PROGRESS',
+      placedAt: new Date(Date.now() - 2 * 24 * 3600 * 1000).toISOString(), // hace 2 días
+      deliveryDate: new Date(Date.now() + 3 * 24 * 3600 * 1000).toISOString(), // +3 días
+      address: 'Zona 1, Quetzaltenango'
+    },
+    {
+      id: 'o2',
+      orderNumber: 'EC-2025-0002',
+      customerName: 'José Pérez',
+      items: [
+        { product: this.products()[1], qty: 1, price: this.products()[1].price }
+      ],
+      total: this.products()[1].price * 1,
+      status: 'IN_PROGRESS',
+      placedAt: new Date(Date.now() - 1 * 24 * 3600 * 1000).toISOString(), // hace 1 día
+      deliveryDate: new Date(Date.now() + 2 * 24 * 3600 * 1000).toISOString(), // +2 días
+      address: 'Zona 3, Quetzaltenango'
+    }
+  ];
+
+  /** Lista pedidos en curso (logística) */
+  listOrdersInProgress(): Order[] {
+    return this.orders.filter(o => o.status === 'IN_PROGRESS');
+  }
+
+  /** Cambia la fecha estimada de entrega (ISO) */
+  updateOrderDeliveryDate(id: string, isoDate: string): Order | undefined {
+    const idx = this.orders.findIndex(o => o.id === id);
+    if (idx === -1) return undefined;
+    this.orders[idx] = { ...this.orders[idx], deliveryDate: isoDate };
+    return this.orders[idx];
+  }
+
+  /** Marca un pedido como entregado (usa fecha actual) */
+  markOrderDelivered(id: string): Order | undefined {
+    const idx = this.orders.findIndex(o => o.id === id);
+    if (idx === -1) return undefined;
+    const now = new Date().toISOString();
+    this.orders[idx] = {
+      ...this.orders[idx],
+      status: 'DELIVERED',
+      deliveredAt: now
+    };
+    return this.orders[idx];
   }
 
 }

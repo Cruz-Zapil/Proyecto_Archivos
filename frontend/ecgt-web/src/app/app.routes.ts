@@ -99,16 +99,17 @@ export const routes: Routes = [
           ).then((m) => m.ReviewQueueComponent),
       },
       /// logistica 
-          /*  {
+            {
         path: 'logistics/orders',
         title: 'Pedidos en curso · ECGT',
         canActivate: [authGuard],
         data: { roles: ['LOGISTICS'] },
         loadComponent: () =>
-          import('./features/logistics/orders.component').then(
-            (m) => m.LogisticsOrdersComponent
+          import('./features/logistics/orders/orders.component').then(
+            (m) => m.OrdersComponent
           ),
       },
+      /*
 
       // 🧑‍💼 Administrador
       {
