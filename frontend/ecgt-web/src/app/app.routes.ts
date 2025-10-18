@@ -32,6 +32,7 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/cart/cart.component').then((m) => m.CartComponent),
       },
+      /// Autenticación
       {
         path: 'login',
         title: 'Iniciar sesión · ECGT',
@@ -41,6 +42,7 @@ export const routes: Routes = [
             (m) => m.LoginComponent
           ),
       },
+      /// Registro
       {
         path: 'register',
         title: 'Crear cuenta · ECGT',
@@ -86,6 +88,42 @@ export const routes: Routes = [
             (m) => m.SellProductComponent
           ),
       },
+            //  Moderador - revisión de productos
+      {
+        path: 'moderation/review',
+        title: 'Revisión de productos · ECGT',
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import(
+            './features/moderation/review-queue/review-queue.component'
+          ).then((m) => m.ReviewQueueComponent),
+      },
+      /// logistica 
+          /*  {
+        path: 'logistics/orders',
+        title: 'Pedidos en curso · ECGT',
+        canActivate: [authGuard],
+        data: { roles: ['LOGISTICS'] },
+        loadComponent: () =>
+          import('./features/logistics/orders.component').then(
+            (m) => m.LogisticsOrdersComponent
+          ),
+      },
+
+      // 🧑‍💼 Administrador
+      {
+        path: 'admin/reports',
+        title: 'Reportes · ECGT',
+        canActivate: [authGuard],
+        data: { roles: ['ADMIN'] },
+        loadComponent: () =>
+          import('./features/admin/reports.component').then(
+            (m) => m.AdminReportsComponent
+          ),
+          
+
+          }*/
+
     ],
   },
 
