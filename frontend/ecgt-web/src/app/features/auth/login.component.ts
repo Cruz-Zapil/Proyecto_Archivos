@@ -16,9 +16,10 @@ import { Router, RouterLink, ActivatedRoute } from '@angular/router';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent {
 
-  private auth = inject(AuthService);
+
+export class LoginComponent {
+ private auth = inject(AuthService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
@@ -28,24 +29,28 @@ export class LoginComponent {
   error = '';
 
   submit(form: NgForm) {
-    if (form.invalid) return;
+    if (form.invalid || this.loading) return;
     this.loading = true;
     this.error = '';
 
-    this.auth.login({ email: this.email, password: this.password })
-      .subscribe({
-        next: (res) => {
-          // Persistimos sesión y redirigimos
-          this.auth.completeLoginFlow(res);
-          const redirect = this.route.snapshot.queryParamMap.get('redirect') ?? '/';
-          this.router.navigateByUrl(redirect);
-        },
-        error: (e) => {
-          this.error = e?.error?.message ?? 'Credenciales inválidas';
-          this.loading = false;
-        },
-        complete: () => this.loading = false
-      });
-  }
+    this.auth.login({ email: this.email, password: this.password }).subscribe({
+      next: (res) => {
+        this.auth.completeLoginFlow(res);
 
+        // ✅ Lee ambos nombres para ser compatible con el guard
+        const qp = this.route.snapshot.queryParamMap;
+        const redirect =
+          qp.get('redirectTo') ??   // el que te sugerí en el guard
+          qp.get('redirect')   ??   // el que ya tenías en el login
+          '/';
+
+        this.router.navigateByUrl(redirect);
+      },
+      error: (e) => {
+        this.error = e?.error?.message ?? 'Credenciales inválidas';
+        this.loading = false;
+      },
+      complete: () => (this.loading = false),
+    });
+  }
 }

@@ -9,7 +9,7 @@ export const authGuard: CanActivateFn = (route, state): boolean | UrlTree => {
 
   // Si no hay sesión → al login
   if (!auth.isLoggedIn()) {
-    return router.createUrlTree(['/auth/login'], { queryParams: { redirect: state.url }});
+    return router.createUrlTree(['/login'], { queryParams: { redirect: state.url }});
   }
 
   // Si la ruta define roles, validarlos

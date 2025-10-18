@@ -87,10 +87,10 @@
           <span class="fs-4 price">{{ total() | currency:'GTQ':'symbol-narrow':'1.2-2' }}</span>
         </div>
 
-        <button class="btn btn-primary w-100 mb-2" (click)="checkout()">
+        <button type="button" class="btn btn-primary w-100 mb-2" (click)="checkout()">
           <i class="bi bi-credit-card me-2"></i> Finalizar compra
         </button>
-        <a routerLink="/catalog" class="btn btn-outline-light w-100">
+        <a routerLink="/" class="btn btn-outline-light w-100">
           Seguir comprando
         </a>
 

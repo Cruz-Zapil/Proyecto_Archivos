@@ -8,7 +8,7 @@ import { ShellComponent } from './app/shared/layout/shell.component';
 import { appConfig } from './app/app.config';
 import { AppComponent } from './app/app.component';
 
-bootstrapApplication(ShellComponent, {
+bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(routes),
     provideHttpClient()
