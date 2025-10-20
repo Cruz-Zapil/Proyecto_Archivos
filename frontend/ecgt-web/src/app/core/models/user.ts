@@ -1,35 +1,74 @@
-// Define los tipos de rol que existen en la plataforma
-export type UserRole = 'COMUN' | 'MODERADOR' | 'LOGISTICA' | 'ADMIN';
+// ============================================================
+// user.ts
+// ------------------------------------------------------------
+// Modelos de usuario y autenticación de ECGT.
+// Incluye definición de roles, estructura del usuario,
+// payloads de autenticación y respuesta del backend.
+// Permanente: se conectará con las entidades User/Auth en Spring Boot.
+// ============================================================
 
+// 🧩 Tipos de rol disponibles en la plataforma
+export type UserRole = 'COMMON' | 'MODERATOR' | 'LOGISTICS' | 'ADMIN';
 
-// Usuario estándar que retorna el backend
+/**
+ * Interface User
+ * ---------------
+ * Representa a cualquier usuario del sistema.
+ * Se usa tanto para clientes (COMMON) como empleados (otros roles).
+ */
 export interface User {
+  
   id: string;
+
+  /** Nombre visible del usuario */
   name: string;
+
+  // Correo electrónico
   email: string;
-  roles: UserRole[];        // un usuario puede tener más de un rol (admin, etc.)
+
+  // Roles asignados (puede tener varios)
+  roles: UserRole[];
+
+  // Indica si la cuenta está habilitada (activo en sistema)
   enabled: boolean;
-  // datos opcionales que te servirán más adelante
+
+  // Datos opcionales
   avatarUrl?: string;
   createdAt?: string;
   updatedAt?: string;
+
+  //  Campos opcionales de compatibilidad (para los módulos de empleados)
+  /** Alias opcional para 'name', usado en módulos admin */
+  nombre?: string;
+
+  /** Alias opcional para 'enabled', usado en módulos admin */
+  activo?: boolean;
 }
 
-// Respuestas típicas de auth
+/**
+ * AuthResponse
+ * Respuesta estándar del backend al iniciar sesión o registrarse.
+ */
 export interface AuthResponse {
-  accessToken: string;      // JWT
-  refreshToken?: string;    // opcional si implementas refresh
+  accessToken: string;       // JWT principal
+  refreshToken?: string;     // opcional si implementas refresh
   user: User;
 }
 
-//  para registro (sólo tipo COMÚN)
+/**
+ * RegisterPayload
+ * Estructura para registro (sólo usuarios de tipo COMMON).
+ */
 export interface RegisterPayload {
   name: string;
   email: string;
   password: string;
 }
 
-//  para login
+/**
+ * LoginPayload
+ * Estructura para autenticación básica.
+ */
 export interface LoginPayload {
   email: string;
   password: string;

@@ -1,0 +1,247 @@
+
+<div class="surface p-4 rounded-3 shadow-sm">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h2 class="m-0"><i class="bi bi-bar-chart"></i> Reportes administrativos</h2>
+    <button class="btn btn-outline-secondary btn-sm" (click)="applyFilters()">
+      <i class="bi bi-arrow-repeat"></i> Recargar
+    </button>
+  </div>
+
+
+  <!-- 📅 Filtros de fecha (intervalo desde / hasta) -->
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+  <label class="form-label m-0 me-2 fw-semibold">Intervalo:</label>
+  <input
+    type="date"
+    class="form-control form-control-sm"
+    [(ngModel)]="dateFrom"
+  />
+  <span class="mx-1">–</span>
+  <input
+    type="date"
+    class="form-control form-control-sm"
+    [(ngModel)]="dateTo"
+  />
+
+  <button class="btn btn-primary btn-sm" (click)="applyFilters()" [disabled]="loading">
+    <i class="bi bi-funnel"></i> Aplicar
+  </button>
+
+  <button class="btn btn-outline-secondary btn-sm" (click)="resetFilters()" [disabled]="loading">
+    <i class="bi bi-x-circle"></i> Limpiar
+  </button>
+</div>
+
+
+  <!-- Tabs -->
+  <ul class="nav nav-tabs mb-3">
+    <li class="nav-item" (click)="setTab('top-products')">
+      <a class="nav-link" [class.active]="activeTab==='top-products'">Top productos</a>
+    </li>
+    <li class="nav-item" (click)="setTab('clients-revenue')">
+      <a class="nav-link" [class.active]="activeTab==='clients-revenue'">Clientes por ganancias</a>
+    </li>
+    <li class="nav-item" (click)="setTab('clients-sales')">
+      <a class="nav-link" [class.active]="activeTab==='clients-sales'">Clientes por ventas</a>
+    </li>
+    <li class="nav-item" (click)="setTab('clients-orders')">
+      <a class="nav-link" [class.active]="activeTab==='clients-orders'">Clientes por pedidos</a>
+    </li>
+    <li class="nav-item" (click)="setTab('clients-products')">
+      <a class="nav-link" [class.active]="activeTab==='clients-products'">Clientes por productos en venta</a>
+    </li>
+    <li class="nav-item" (click)="setTab('sanctions')">
+      <a class="nav-link" [class.active]="activeTab==='sanctions'">Sanciones</a>
+    </li>
+    <li class="nav-item" (click)="setTab('notifications')">
+      <a class="nav-link" [class.active]="activeTab==='notifications'">Notificaciones</a>
+    </li>
+  </ul>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary"></div>
+    <p class="mt-3">Cargando reportes...</p>
+  </div>
+
+  <!-- Contenido por pestaña -->
+  <div *ngIf="!loading">
+
+    <!-- Top productos -->
+    <section *ngIf="activeTab==='top-products'">
+      <div class="row g-3">
+        <div class="col-lg-6">
+          <div class="chart-card">
+            <canvas baseChart
+              [type]="'bar'"
+              [data]="chartTopProducts"
+              [options]="chartTopProductsOpts">
+            </canvas>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <table class="table table-sm">
+            <thead><tr><th>Producto</th><th>Vendidos</th><th>Ingresos</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let p of topProducts">
+                <td>{{ p.productName }}</td>
+                <td>{{ p.totalSold }}</td>
+                <td>{{ p.totalRevenue | currency:'GTQ' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Clientes por ganancias -->
+    <section *ngIf="activeTab==='clients-revenue'">
+      <div class="row g-3">
+        <div class="col-lg-6">
+          <div class="chart-card">
+            <canvas baseChart
+              [type]="'bar'"
+              [data]="chartClientsRevenue"
+              [options]="chartClientsRevenueOpts">
+            </canvas>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <ul class="list-group list-group-flush">
+            <li *ngFor="let c of topClientsRevenue" class="list-group-item d-flex justify-content-between">
+              <span>{{ c.clientName }}</span>
+              <span class="fw-semibold">{{ c.value | currency:'GTQ' }}</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Clientes por ventas -->
+    <section *ngIf="activeTab==='clients-sales'">
+      <div class="row g-3">
+        <div class="col-lg-6">
+          <div class="chart-card">
+            <canvas baseChart
+              [type]="'bar'"
+              [data]="chartClientsSales"
+              [options]="chartClientsSalesOpts">
+            </canvas>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <ul class="list-group list-group-flush">
+            <li *ngFor="let c of topClientsSales" class="list-group-item d-flex justify-content-between">
+              <span>{{ c.clientName }}</span>
+              <span>{{ c.value }} productos vendidos</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Clientes por pedidos -->
+    <section *ngIf="activeTab==='clients-orders'">
+      <div class="row g-3">
+        <div class="col-lg-6">
+          <div class="chart-card">
+            <canvas baseChart
+              [type]="'bar'"
+              [data]="chartClientsOrders"
+              [options]="chartClientsOrdersOpts">
+            </canvas>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <ul class="list-group list-group-flush">
+            <li *ngFor="let c of topClientsOrders" class="list-group-item d-flex justify-content-between">
+              <span>{{ c.clientName }}</span>
+              <span>{{ c.value }} pedidos</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Clientes por productos en venta -->
+    <section *ngIf="activeTab==='clients-products'">
+      <div class="row g-3">
+        <div class="col-lg-6">
+          <div class="chart-card">
+            <canvas baseChart
+              [type]="'bar'"
+              [data]="chartClientsProducts"
+              [options]="chartClientsProductsOpts">
+            </canvas>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <ul class="list-group list-group-flush">
+            <li *ngFor="let c of topClientsProducts" class="list-group-item d-flex justify-content-between">
+              <span>{{ c.clientName }}</span>
+              <span>{{ c.value }} productos</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sanciones -->
+    <section *ngIf="activeTab==='sanctions'">
+      <div class="row g-3">
+        <div class="col-lg-6">
+          <div class="chart-card">
+            <canvas baseChart
+              [type]="'doughnut'"
+              [data]="chartSanctions"
+              [options]="chartSanctionsOpts">
+            </canvas>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <table class="table table-sm">
+            <thead><tr><th>Usuario</th><th>Motivo</th><th>Fecha</th><th>Estado</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let s of sanctions">
+                <td>{{ s.user }}</td>
+                <td>{{ s.reason }}</td>
+                <td>{{ s.date | date:'shortDate' }}</td>
+                <td><span class="badge" [ngClass]="s.active ? 'bg-danger' : 'bg-secondary'">
+                  {{ s.active ? 'Activa' : 'Resuelta' }}
+                </span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Notificaciones -->
+    <section *ngIf="activeTab==='notifications'">
+      <div class="row g-3">
+        <div class="col-lg-6">
+          <div class="chart-card">
+            <canvas baseChart
+              [type]="'line'"
+              [data]="chartNotifications"
+              [options]="chartNotificationsOpts">
+            </canvas>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <table class="table table-sm">
+            <thead><tr><th>Usuario</th><th>Mensaje</th><th>Fecha</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let n of notifications">
+                <td>{{ n.user }}</td>
+                <td>{{ n.message }}</td>
+                <td>{{ n.sentAt | date:'short' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>

@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+
 //import { guestGuard } from './core/guards/guest.guard'; // si lo usas
 
 //  Rutas principales envueltas por el Shell (header + footer)
@@ -88,7 +89,7 @@ export const routes: Routes = [
             (m) => m.SellProductComponent
           ),
       },
-            //  Moderador - revisión de productos
+      //  Moderador - revisión de productos
       {
         path: 'moderation/review',
         title: 'Revisión de productos · ECGT',
@@ -98,8 +99,8 @@ export const routes: Routes = [
             './features/moderation/review-queue/review-queue.component'
           ).then((m) => m.ReviewQueueComponent),
       },
-      /// logistica 
-            {
+      /// logistica
+      {
         path: 'logistics/orders',
         title: 'Pedidos en curso · ECGT',
         canActivate: [authGuard],
@@ -109,7 +110,20 @@ export const routes: Routes = [
             (m) => m.OrdersComponent
           ),
       },
-      /*
+
+      //  Admin
+      {
+        path: 'admin/users',
+        title: 'Gestión de empleados · ECGT',
+        canActivate: [authGuard],
+        data: { roles: ['ADMIN'] },
+        loadComponent: () =>
+          import('./features/admin/users/users.component').then(
+            (m) => m.UsersComponent
+          ),
+      },
+
+      
 
       // 🧑‍💼 Administrador
       {
@@ -118,13 +132,12 @@ export const routes: Routes = [
         canActivate: [authGuard],
         data: { roles: ['ADMIN'] },
         loadComponent: () =>
-          import('./features/admin/reports.component').then(
+          import('./features/admin/reports/reports.component').then(
             (m) => m.AdminReportsComponent
           ),
           
 
-          }*/
-
+          }
     ],
   },
 

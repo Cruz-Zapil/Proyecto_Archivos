@@ -1,1 +1,73 @@
-<p>users works!</p>
+
+<div class="surface p-4 rounded-3 shadow-sm">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <h2 class="m-0"><i class="bi bi-people"></i> Empleados</h2>
+    <button class="btn btn-outline-secondary btn-sm" (click)="load()">
+      <i class="bi bi-arrow-repeat"></i> Recargar
+    </button>
+  </div>
+
+  <!-- Formulario -->
+  <form class="row g-3 mb-4" (ngSubmit)="save()">
+    <div class="col-md-4">
+      <input type="text" [(ngModel)]="newUser.nombre" name="nombre" class="form-control" placeholder="Nombre" required />
+    </div>
+    <div class="col-md-4">
+      <input type="email" [(ngModel)]="newUser.email" name="email" class="form-control" placeholder="Correo" required />
+    </div>
+    <div class="col-md-3">
+      <select [(ngModel)]="newUser.roles" name="rol" class="form-select">
+        <option *ngFor="let r of roles" [ngValue]="[r]">{{ r }}</option>
+      </select>
+    </div>
+    <div class="col-md-1 text-end">
+      <button class="btn btn-primary w-100" type="submit">
+        {{ editing ? 'Actualizar' : 'Agregar' }}
+      </button>
+    </div>
+  </form>
+
+  <!-- Estado -->
+  <div *ngIf="loading" class="text-center py-4">
+    <div class="spinner-border text-primary"></div>
+  </div>
+
+  <!-- Tabla -->
+  <div *ngIf="!loading && employees.length > 0" class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Correo</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          <th class="text-end"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let e of employees">
+          <td>{{ e.nombre }}</td>
+          <td>{{ e.email }}</td>
+          <td>{{ e.roles[0] }}</td>
+          <td>
+            <span class="badge" [ngClass]="e.activo ? 'bg-success' : 'bg-secondary'">
+              {{ e.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td class="text-end">
+            <button class="btn btn-sm btn-outline-primary me-1" (click)="edit(e)">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger" (click)="remove(e)">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="message" class="alert alert-info small mt-3 text-center">
+    {{ message }}
+  </div>
+</div>

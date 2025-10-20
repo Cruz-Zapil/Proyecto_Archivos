@@ -22,9 +22,9 @@ export class HeaderComponent {
 
   user = this.auth.user;
   isLoggedIn = this.auth.isLoggedIn;
-  isCommon = computed(() => this.auth.hasAnyRole(['COMUN']));
-  isModerator = computed(() => this.auth.hasAnyRole(['MODERADOR']));
-  isLogistics = computed(() => this.auth.hasAnyRole(['LOGISTICA']));
+  isCommon = computed(() => this.auth.hasAnyRole(['COMMON']));
+  isModerator = computed(() => this.auth.hasAnyRole(['MODERATOR']));
+  isLogistics = computed(() => this.auth.hasAnyRole(['LOGISTICS']));
   isAdmin = computed(() => this.auth.hasAnyRole(['ADMIN']));
 
   logout() { this.auth.logout(); }
