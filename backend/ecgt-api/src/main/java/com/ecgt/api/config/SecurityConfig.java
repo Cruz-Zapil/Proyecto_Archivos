@@ -21,36 +21,40 @@ import java.util.List;
 public class SecurityConfig {
 
   private final JwtAuthFilter jwtAuthFilter;
-@Bean
-SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-  http
-    .csrf(csrf -> csrf.disable())
-    .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-    .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-    .authorizeHttpRequests(auth -> auth
-    
-        //  Preflight CORS
-        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
 
-        //  Públicos
-        .requestMatchers("/api/auth/**").permitAll()
-        .requestMatchers("/api/test/**").permitAll()
-        .requestMatchers("/api/products/approved", "/api/products/public").permitAll()
+  @Bean
+  SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    http
+        .csrf(csrf -> csrf.disable())
+        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(auth -> auth
 
-        //  Por rol (usa hasRole = espera ROLE_*)
-        .requestMatchers("/api/seller/**").hasAnyRole("COMMON", "ADMIN")
-        .requestMatchers("/api/moderation/**").hasRole("MODERATOR")
-        .requestMatchers("/api/logistics/**").hasRole("LOGISTICS")
-        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+            // Preflight CORS
+            .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+            // Rutas públicas
+            .requestMatchers(
+                "/api/auth/**",
+                "/api/products/public/**",
+                "/api/products/approved/**",
+                "/api/categories/**",
+                "/v3/api-docs/**",
+                "/swagger-ui/**")
+            .permitAll()
 
-        // Demás
-        .anyRequest().authenticated()
-    )
-    .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+            // Por rol (usa hasRole = espera ROLE_*)
+            
+            .requestMatchers("/api/seller/**").hasAnyRole("COMMON", "ADMIN")
+            .requestMatchers("/api/moderation/**").hasRole("MODERATOR")
+            .requestMatchers("/api/logistics/**").hasRole("LOGISTICS")
+            .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-  return http.build();
-}
+            // Demás
+            .anyRequest().authenticated())
+        .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
+    return http.build();
+  }
 
   @Bean
   CorsConfigurationSource corsConfigurationSource() {
