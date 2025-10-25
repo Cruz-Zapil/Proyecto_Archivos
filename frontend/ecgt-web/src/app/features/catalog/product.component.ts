@@ -1,18 +1,16 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-// imports
-
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { NgIf } from '@angular/common';
-
-import { MockApiService } from '../../mocks/mock-api.service';
 import { CartService } from '../../core/services/cart.service';
+import { ProductService, ApiProductResp, PageResp } from '../../core/services/product.service';
 
 /**
- * Página de detalle de producto.
- * Obtiene el ID desde la ruta (/product/:id),
- * busca el producto en el MockApiService y permite agregarlo al carrito.
+ * ProductComponent
+ * ----------------
+ * Vista de detalle. Temporalmente obtiene el producto buscando
+ * dentro de una página "amplia" del catálogo público.
+ * Permanente en cuanto exista GET /products/{id} en backend.
  */
 
 @Component({
@@ -23,19 +21,51 @@ import { CartService } from '../../core/services/cart.service';
   styleUrls: ['./product.component.scss']
 })
 export class ProductComponent {
-    product = this.api.getProduct(this.route.snapshot.params['id']);
+  product?: ApiProductResp;
+  loading = true;
 
-  constructor(private route: ActivatedRoute, private api: MockApiService, private cart: CartService) {}
+  constructor(
+    private route: ActivatedRoute,
+    private products: ProductService,
+    private cart: CartService
+  ) {}
 
-  addToCart() {
-    if (this.product) {
-      this.cart.add({
-        id: crypto.randomUUID(),
-        product: this.product,
-        qty: 1
-      });
-      alert(`${this.product.nombre} agregado al carrito 🛒`);
-    }
+  ngOnInit() {
+    const id = this.route.snapshot.params['id'];
+
+    // ⚠️ Temporal: traemos muchos y buscamos el id en cliente.
+    // Reemplaza por: this.products.getPublicById(id).subscribe(...)
+    this.products.listPublic(0, 200).subscribe({
+      next: (page: PageResp<ApiProductResp>) => {
+        this.product = page.content.find(p => p.id === id);
+        this.loading = false;
+      },
+      error: () => this.loading = false
+    });
   }
 
+  addToCart() {
+    if (!this.product) return;
+
+    // ⚠️ Mapeo mínimo a tu modelo de carrito (ajústalo a tu CartItem/Product UI).
+    const uiProduct: any = {
+      id: this.product.id,
+      name: this.product.name,
+      description: this.product.description,
+      price: this.product.price,
+      imageUrl: '', // si lo agregas en backend, mapea aquí
+      status: 'APPROVED',
+      stock: this.product.stock,
+      condition: this.product.condition,
+      category: this.product.categories?.[0] ?? 'OTHER'
+    };
+
+    this.cart.add({
+      id: crypto.randomUUID(),
+      product: uiProduct,
+      qty: 1
+    });
+
+    alert(`${this.product.name} agregado al carrito 🛒`);
+  }
 }

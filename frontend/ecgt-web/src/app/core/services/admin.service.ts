@@ -1,49 +1,51 @@
-
 import { Injectable, inject } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { User } from '../models/user';
 import { HttpService } from './http.service';
-import { MockApiService } from '../../mocks/mock-api.service';
+import { Observable } from 'rxjs';
 
-
-/** * Admin Service
- * Servicio de administración: gestionar empleados (CRUD).
- * Temporalmente usa MockApiService.
- * Permanente: se conectará a endpoints de Spring Boot.
+/**
+ * AdminService
+ * ------------
+ * Gestión de empleados (MODERATOR, LOGISTICS, ADMIN).
+ * Permanente: conecta con endpoints /api/admin/users.
  */
-@Injectable({
-  providedIn: 'root'
-})
+
+export type EmployeeRole = 'MODERATOR' | 'LOGISTICS' | 'ADMIN';
+
+export interface Employee {
+  id: string;
+  name: string;
+  email: string;
+  role: EmployeeRole;
+  enabled: boolean;
+}
+
+export interface CreateEmployeePayload {
+  name: string;
+  email: string;
+  password: string;
+  role: EmployeeRole;
+}
+
+@Injectable({ providedIn: 'root' })
 export class AdminService {
+  list() {
+    throw new Error('Method not implemented.');
+  }
+  private http = inject(HttpService);
 
-  constructor() { }
-
-
-   private http = inject(HttpService);
-  private mock = inject(MockApiService);
-
-  /** Lista todos los empleados (ADMIN, MODERATOR, LOGISTICS) */
-  list(): Observable<User[]> {
-    // return this.http.get<User[]>('/admin/employees');
-    return of(this.mock.listEmployees());
+  listEmployees(): Observable<Employee[]> {
+    return this.http.get<Employee[]>('/admin/users');
   }
 
-  /** Crea nuevo empleado */
-  create(payload: User): Observable<User> {
-    // return this.http.post<User>('/admin/employees', payload);
-    return of(this.mock.addEmployee(payload));
+  createEmployee(payload: CreateEmployeePayload): Observable<Employee> {
+    return this.http.post<Employee>('/admin/users', payload);
   }
 
-  /** Actualiza empleado existente */
-  update(payload: User): Observable<User> {
-    // return this.http.put<User>(`/admin/employees/${payload.id}`, payload);
-    return of(this.mock.updateEmployee(payload));
+  updateEmployee(employee: Partial<Employee> & { id: string }): Observable<Employee> {
+    return this.http.put<Employee>(`/admin/users/${employee.id}`, employee);
   }
 
-  /** Elimina empleado */
-  delete(id: string): Observable<boolean> {
-    // return this.http.delete<boolean>(`/admin/employees/${id}`);
-    return of(this.mock.deleteEmployee(id));
+  deleteEmployee(id: string): Observable<boolean> {
+    return this.http.delete<boolean>(`/admin/users/${id}`);
   }
-
 }

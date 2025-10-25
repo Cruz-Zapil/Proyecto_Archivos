@@ -10,10 +10,12 @@ import {
 } from '../models/user';
 
 /**
- * AuthService (mock)
- * - Guarda token/usuario en localStorage
- * - Cambiaremos login/register por llamadas HTTP al conectar con Spring.
+ * AuthService
+ * ------------
+ * Maneja login/registro y persistencia de sesión con JWT.
+ * Permanente: se comunica con el backend Spring Boot real.
  */
+
 const ACCESS_TOKEN_KEY = 'ecgt_token';
 const USER_KEY = 'ecgt_user';
 
@@ -28,18 +30,44 @@ export class AuthService {
   isLoggedIn = computed(() => !!this._user());
   roles = computed<UserRole[]>(() => this._user()?.roles ?? []);
 
-
-  /// login
+  /**  Login real contra Spring Boot */
   login(payload: LoginPayload) {
-    return this.http.post<AuthResponse>(`/login`, payload);
+    // Llama a /api/auth/login del backend
+    return this.http.post<AuthResponse>('/auth/login', payload);
   }
 
-  /// register
+  /**  Registro real contra Spring Boot */
   register(payload: RegisterPayload) {
-    return this.http.post<AuthResponse>(`/register`, payload);
+    return this.http.post<AuthResponse>('/auth/register', payload);
   }
 
-  // Lee usuario guardado (post-refresh)
+  /**  Guarda sesión después del login/registro */
+
+completeLoginFlow(res: AuthResponse) {
+  const token = (res as any).accessToken ?? (res as any).token;
+  if (!token) { console.error('No token'); return; }
+
+  const raw = res.user as any;
+  const roles = Array.isArray(raw.roles)
+    ? raw.roles
+    : (raw.role?.name ? [raw.role.name] : []);
+
+  const { passwordHash, role, ...rest } = raw;
+  const user: User = { ...rest, roles };
+
+  localStorage.setItem('ecgt_token', token);
+  localStorage.setItem('ecgt_user', JSON.stringify(user));
+  this._user.set(user);
+}
+
+
+  
+  /**  Obtiene el token actual */
+  get token(): string | null {
+    return localStorage.getItem(ACCESS_TOKEN_KEY);
+  }
+
+  /**  Lee usuario guardado (tras refresh) */
   private readUserFromStorage(): User | null {
     const raw = localStorage.getItem(USER_KEY);
     try {
@@ -49,23 +77,7 @@ export class AuthService {
     }
   }
 
-  // Guarda tokens y usuario
-  private persistSession(res: AuthResponse) {
-    localStorage.setItem(ACCESS_TOKEN_KEY, res.accessToken);
-    localStorage.setItem(USER_KEY, JSON.stringify(res.user));
-    this._user.set(res.user);
-  }
-
-  get token(): string | null {
-    return localStorage.getItem(ACCESS_TOKEN_KEY);
-  }
-
-  completeLoginFlow(res: AuthResponse) {
-    localStorage.setItem(ACCESS_TOKEN_KEY, res.accessToken ?? 'fake'); // Temporal
-    localStorage.setItem(USER_KEY, JSON.stringify(res.user));
-    this._user.set(res.user);
-  }
-
+  /**  Cerrar sesión */
   logout() {
     localStorage.removeItem(ACCESS_TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
@@ -73,7 +85,7 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
-  // Utilidad para verificar rol
+  /**  Verifica si el usuario tiene alguno de los roles permitidos */
   hasAnyRole(allowed: UserRole[]): boolean {
     const r = this.roles();
     return allowed.some((role) => r.includes(role));

@@ -1,55 +1,148 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpService } from './http.service';
-import { MockApiService } from '../../mocks/mock-api.service';
-import { Product } from '../models/product';
-import { Observable, of } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { Observable } from 'rxjs';
 
 /**
- * Servicio de productos
-
- * Este servicio se encarga de realizar las operaciones CRUD (crear, listar, obtener, actualizar)
- * de los productos que vende un usuario. Actualmente usa MockApiService temporalmente,
- * pero se conectará al backend de Spring Boot más adelante.
+ * ProductService
+ * ---------------
+ * CRUD y listados de productos contra el backend (Spring Boot).
+ * Permanente: NO usa mocks; todas las llamadas van por HttpClient.
  */
 
-@Injectable({
-  providedIn: 'root',
-})
+// Modelo UI que ya tienes
+import { Product } from '../models/product';
+
+// ====== DTOs del backend ======
+export interface ApiProductResp {
+image: any;
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  stock: number;
+  condition: 'NEW' | 'USED';
+  reviewStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
+  categories: string[];
+}
+
+export interface ApiProductCreateReq {
+  name: string;
+  description?: string;
+  price: number;
+  stock: number;
+  condition: 'NEW' | 'USED';
+  categoryIds?: string[];   // opcional (máx 2)
+  imageUrls?: string[];     // opcional
+}
+export interface ApiProductUpdateReq extends Partial<ApiProductCreateReq> {}
+
+export interface PageResp<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number; // página actual
+  size: number;
+}
+
+@Injectable({ providedIn: 'root' })
 export class ProductService {
 
+  
   private http = inject(HttpService);
-  private mock = inject(MockApiService);
 
-  /** Lista pública de productos */
-  getAll(): Observable<Product[]> {
-    return of(this.mock.listProducts());
+  // =============== CATÁLOGO PÚBLICO ===============
+
+  /**
+   * Productos aprobados y visibles para todos.
+   * GET /api/products/approved?page=&size=
+   */
+  listPublic(page = 0, size = 12): Observable<PageResp<ApiProductResp>> {
+    return this.http.get<PageResp<ApiProductResp>>(
+      `/products/approved?page=${page}&size=${size}`
+    );
   }
 
-  /** Productos creados por un usuario (simulado) */
-  getByUser(userId: string): Observable<Product[]> {
-    return of(this.mock.listProducts().filter(p => p.status === 'APPROVED'));
+  // =============== VENDEDOR (COMMON) ===============
+
+  /**
+   * Productos del vendedor autenticado.
+   * GET /api/seller/products?page=&size=
+   */
+  listMine(page = 0, size = 12): Observable<PageResp<ApiProductResp>> {
+    return this.http.get<PageResp<ApiProductResp>>(
+      `/seller/products?page=${page}&size=${size}`
+    );
   }
 
-  /** Obtiene un producto por ID */
-  getById(id: string): Observable<Product | undefined> {
-    return of(this.mock.getProduct(id));
+  /**
+   * Crear producto (queda en PENDING).
+   * POST /api/seller/products
+   */
+  createFromUiModel(
+    p: Product,
+    categoryIds?: string[],
+    imageUrls?: string[]
+  ): Observable<ApiProductResp> {
+    const payload: ApiProductCreateReq = {
+      name: p.name,
+      description: p.description,
+      price: p.price,
+      stock: p.stock,
+      condition: (p as any).condition ?? (p as any).estadoProducto ?? 'NEW',
+      categoryIds,
+      imageUrls,
+    };
+    return this.http.post<ApiProductResp>(`/seller/products`, payload);
   }
 
-  /** Crea un nuevo producto */
-  create(product: Product): Observable<Product> {
-    return of(this.mock.addProduct(product));
+  /**
+   * Actualizar producto (vuelve a PENDING).
+   * PUT /api/seller/products/{id}
+   */
+  updateFromUiModel(
+    p: Product,
+    categoryIds?: string[],
+    imageUrls?: string[]
+  ): Observable<ApiProductResp> {
+    const payload: ApiProductUpdateReq = {
+      name: p.name,
+      description: p.description,
+      price: p.price,
+      stock: p.stock,
+      condition: (p as any).condition ?? (p as any).estadoProducto,
+      categoryIds,
+      imageUrls,
+    };
+    return this.http.put<ApiProductResp>(`/seller/products/${p.id}`, payload);
   }
 
-  /** Actualiza un producto existente */
-  update(product: Product): Observable<Product | null> {
-    return of(this.mock.updateProduct(product));
+  /**
+   * Eliminar producto propio (si lo soportas en backend).
+   * DELETE /api/seller/products/{id}
+   */
+  deleteMine(id: string): Observable<boolean> {
+    return this.http.delete<boolean>(`/seller/products/${id}`);
   }
 
-    /** Elimina un producto por ID */
-  delete(id: string): Observable<boolean> {
-    return of(this.mock.deleteProduct(id));
+  // =============== MODERACIÓN (MODERATOR) ===============
+
+  /**
+   * Productos pendientes de aprobación.
+   * GET /api/moderation/products/pending?page=&size=
+   */
+  listPending(page = 0, size = 12): Observable<PageResp<ApiProductResp>> {
+    return this.http.get<PageResp<ApiProductResp>>(
+      `/moderation/products/pending?page=${page}&size=${size}`
+    );
   }
 
+  /** Aprobar producto (POST por simplicidad). */
+  approve(id: string) {
+    return this.http.post<ApiProductResp>(`/moderation/products/${id}/approve`, {});
+  }
 
+  /** Rechazar producto (POST por simplicidad). */
+  reject(id: string) {
+    return this.http.post<ApiProductResp>(`/moderation/products/${id}/reject`, {});
+  }
 }

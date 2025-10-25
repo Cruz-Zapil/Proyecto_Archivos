@@ -1,42 +1,77 @@
 package com.ecgt.api.config;
 
+import com.ecgt.api.security.JwtAuthFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.*;
 
-/**
- * SecurityConfig
- * ---------------
- * Configuración de seguridad inicial (sin JWT).
- * Permite acceso libre a /api/ping y /api/auth/**,
- * el resto requiere autenticación básica temporal.
- * Luego migraremos esto a JWT.
- */
+import java.util.List;
 
-
- @Configuration
+@Configuration
+@EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
-        http
-            // 🚫 Desactiva CSRF (no lo necesitamos aún)
-            .csrf(csrf -> csrf.disable())
-
-            // 🔓 Define reglas de acceso
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/ping", "/api/auth/**").permitAll()  // públicas
-                .anyRequest().authenticated()  // todo lo demás requiere login (temporal)
-            )
-
-            // 🔐 Habilita autenticación básica temporal (solo mientras montamos JWT)
-            .httpBasic(Customizer.withDefaults());
-
-        return http.build();
-    }
+  private final JwtAuthFilter jwtAuthFilter;
+@Bean
+SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+  http
+    .csrf(csrf -> csrf.disable())
+    .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+    .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+    .authorizeHttpRequests(auth -> auth
     
-    
+        //  Preflight CORS
+        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+
+        //  Públicos
+        .requestMatchers("/api/auth/**").permitAll()
+        .requestMatchers("/api/test/**").permitAll()
+        .requestMatchers("/api/products/approved", "/api/products/public").permitAll()
+
+        //  Por rol (usa hasRole = espera ROLE_*)
+        .requestMatchers("/api/seller/**").hasAnyRole("COMMON", "ADMIN")
+        .requestMatchers("/api/moderation/**").hasRole("MODERATOR")
+        .requestMatchers("/api/logistics/**").hasRole("LOGISTICS")
+        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+        // Demás
+        .anyRequest().authenticated()
+    )
+    .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
+  return http.build();
+}
+
+
+  @Bean
+  CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration config = new CorsConfiguration();
+    config.setAllowedOrigins(java.util.List.of(
+        "http://localhost:4200",
+        "http://127.0.0.1:4200" // por si cambias
+    // "https://tu-sitio.netlify.app" // en producción
+    ));
+    config.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+    config.setAllowedHeaders(java.util.List.of("Authorization", "Content-Type", "X-Requested-With"));
+    config.setExposedHeaders(java.util.List.of("Authorization"));
+    config.setAllowCredentials(true);
+
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", config);
+    return source;
+  }
+
+  @Bean
+  public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+    return config.getAuthenticationManager();
+  }
 }

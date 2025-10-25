@@ -26,4 +26,5 @@ export interface Product {
   descripcion?: string;
   precio?: number;
   estadoProducto?: ProductCondition;
+   createdAt?: string; //
 }

@@ -15,74 +15,94 @@
 
     <!-- Nav -->
     <div class="collapse navbar-collapse" id="mainNav">
-  <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+      <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
 
-    <!-- Catálogo -->
-    <li class="nav-item">
-      <a
-        class="nav-link px-3"
-        routerLink="/"
-        routerLinkActive="active-link"
-      >
-        <i class="bi bi-grid me-1"></i> Productos
-      </a>
-    </li>
+        <!-- Catálogo -->
+        <li class="nav-item">
+          <a class="nav-link px-3" routerLink="/" routerLinkActive="active-link">
+            <i class="bi bi-grid me-1"></i> Productos
+          </a>
+        </li>
 
-    <!-- Carrito -->
-    <li class="nav-item">
-      <a
-        class="btn btn-outline-light position-relative"
-        routerLink="/cart"
-        routerLinkActive="active-btn"
-      >
-        <i class="bi bi-cart3 me-2"></i>
-        Carrito
-      </a>
-    </li>
+        <!-- Carrito (siempre visible, protegido por guard al entrar) -->
+        <li class="nav-item">
+          <a class="btn btn-outline-light position-relative" routerLink="/cart" routerLinkActive="active-btn">
+            <i class="bi bi-cart3 me-2"></i>
+            Carrito
+          </a>
+        </li>
 
-    <!-- Zona de auth -->
-    <li class="nav-item ms-lg-2" *ngIf="user(); else anon">
-      <div class="dropdown">
-        <button
-          class="btn btn-outline-light d-flex align-items-center gap-2"
-          data-bs-toggle="dropdown"
-          aria-expanded="false"
-        >
-          <span class="avatar-circle">
-            <i class="bi bi-person"></i>
-          </span>
-          <span class="d-none d-sm-inline text-truncate auth-name" title="{{ $any(user()).fullName }}">
-            {{ $any(user()).fullName }}
-          </span>
-          <i class="bi bi-caret-down-fill small opacity-75"></i>
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-          <li>
-            <span class="dropdown-item-text text-muted small">
-              Hola, <strong>{{ $any(user()).nombre }}</strong>
-            </span>
-          </li>
-          <li><hr class="dropdown-divider"></li>
-          <!-- (Opcional) <li><a class="dropdown-item" routerLink="/account"><i class="bi bi-gear me-2"></i>Mi cuenta</a></li> -->
-          <li>
-            <button class="dropdown-item text-danger" (click)="logout()">
-              <i class="bi bi-box-arrow-right me-2"></i>Salir
+        <!-- Enlaces por rol (opcionales) -->
+        <li class="nav-item" *ngIf="isCommon()">
+          <a class="nav-link" routerLink="/my-products" routerLinkActive="active-link">
+            <i class="bi bi-box-seam me-1"></i> Mis productos
+          </a>
+        </li>
+        <li class="nav-item" *ngIf="isModerator()">
+          <a class="nav-link" routerLink="/moderation/review" routerLinkActive="active-link">
+            <i class="bi bi-check2-square me-1"></i> Moderación
+          </a>
+        </li>
+        <li class="nav-item" *ngIf="isLogistics()">
+          <a class="nav-link" routerLink="/logistics/orders" routerLinkActive="active-link">
+            <i class="bi bi-truck me-1"></i> Logística
+          </a>
+        </li>
+        <li class="nav-item" *ngIf="isAdmin()">
+          <a class="nav-link" routerLink="/admin/reports" routerLinkActive="active-link">
+            <i class="bi bi-bar-chart me-1"></i> Reportes
+          </a>
+        </li>
+
+        <!-- Zona Auth -->
+        <!-- Si hay sesión -->
+        <li class="nav-item ms-lg-2" *ngIf="isLoggedIn(); else anon">
+          <div class="dropdown">
+            <button
+              class="btn btn-outline-light d-flex align-items-center gap-2"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              <span class="avatar-circle">
+                <i class="bi bi-person"></i>
+              </span>
+              <!-- Mostrar nombre del usuario (usa user()?.name del modelo) -->
+              <span class="d-none d-sm-inline text-truncate auth-name" [title]="user()?.name || ''">
+                {{ user()?.name }}
+              </span>
+              <i class="bi bi-caret-down-fill small opacity-75"></i>
             </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+              <li>
+                <span class="dropdown-item-text text-muted small">
+                  Hola, <strong>{{ user()?.name }}</strong>
+                </span>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <!-- Ejemplo de opción de perfil futurible -->
+              <!-- <li><a class="dropdown-item" routerLink="/account"><i class="bi bi-gear me-2"></i>Mi cuenta</a></li> -->
+              <li>
+                <button class="dropdown-item text-danger" (click)="logout()">
+                  <i class="bi bi-box-arrow-right me-2"></i>Salir
+                </button>
+              </li>
+            </ul>
+          </div>
+        </li>
+
+        <!-- Si NO hay sesión (guest) -->
+        <ng-template #anon>
+          <li class="nav-item ms-lg-2 d-flex align-items-center gap-2 auth-actions">
+            <a class="btn btn-outline-light" routerLink="/login" routerLinkActive="active-btn">
+              <i class="bi bi-box-arrow-in-right me-2"></i> Entrar
+            </a>
+            <a class="btn btn--outline-light" routerLink="/register" routerLinkActive="active-btn">
+              <i class="bi bi-person-plus me-2"></i> Registro
+            </a>
           </li>
-        </ul>
-      </div>
-    </li>
+        </ng-template>
 
-    <ng-template #anon>
-      <li class="nav-item ms-lg-2 d-flex align-items-center gap-2 auth-actions">
-        <a class="btn btn-outline-light" routerLink="/login" routerLinkActive="active-btn">
-          <i class="bi bi-box-arrow-in-right me-2"></i> Entrar
-        </a>
-        <a class="btn btn--outline-light" routerLink="/register" routerLinkActive="active-btn">
-          <i class="bi bi-person-plus me-2"></i> Registro
-        </a>
-      </li>
-    </ng-template>
-
-  </ul>
-</div>
+      </ul>
+    </div>
+  </div>
+</nav>

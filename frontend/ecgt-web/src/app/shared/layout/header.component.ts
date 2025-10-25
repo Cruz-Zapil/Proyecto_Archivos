@@ -18,14 +18,19 @@ import { AuthService } from '../../core/services/auth.service';
 
 export class HeaderComponent {
 
+
+  // Servicio de auth (signals de usuario y login)
   private auth = inject(AuthService);
 
   user = this.auth.user;
   isLoggedIn = this.auth.isLoggedIn;
+
+
   isCommon = computed(() => this.auth.hasAnyRole(['COMMON']));
   isModerator = computed(() => this.auth.hasAnyRole(['MODERATOR']));
   isLogistics = computed(() => this.auth.hasAnyRole(['LOGISTICS']));
   isAdmin = computed(() => this.auth.hasAnyRole(['ADMIN']));
 
+  // salir
   logout() { this.auth.logout(); }
 }

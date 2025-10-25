@@ -1,17 +1,14 @@
-
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Order } from '../../../core/models/orden';
-import { OrdenService } from '../../../core/services/orden.service';
 import { FormsModule } from '@angular/forms';
+import { OrdenService, Order } from '../../../core/services/orden.service';
 
 /**
- * LogisticsOrdersComponent
-
- * Panel de logística: muestra pedidos en curso, permite reprogramar
- * la fecha de entrega y marcar pedidos como entregados. Temporal (mock).
+ * OrdersComponent (Logística)
+ * ---------------------------
+ * Lista pedidos EN_CURSO, permite reprogramar fecha estimada y marcar entregado.
+ * Permanente: usa OrdenService (HTTP).
  */
-
 
 @Component({
   selector: 'app-orders',
@@ -21,8 +18,7 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./orders.component.scss']
 })
 export class OrdersComponent {
-
-   private orderService = inject(OrdenService);
+  private orderService = inject(OrdenService);
 
   loading = true;
   message = '';
@@ -30,53 +26,55 @@ export class OrdersComponent {
 
   ngOnInit() { this.load(); }
 
-  /** Carga pedidos "IN_PROGRESS" */
+  /** Carga pedidos EN_CURSO desde backend */
   load() {
     this.loading = true;
-    this.orderService.getInProgress().subscribe(res => {
-      this.orders = res;
-      this.loading = false;
+    this.orderService.listOrdersInProgress().subscribe({
+      next: (res) => { this.orders = res; this.loading = false; },
+      error: () => { this.orders = []; this.loading = false; }
     });
   }
 
-  /** Formatea ISO a yyyy-MM-dd para <input type="date"> */
-  toDateInput(iso: string): string {
+  /** yyyy-MM-dd (para <input type="date">) desde ISO */
+  toDateInput(iso?: string): string {
+    if (!iso) return '';
     const d = new Date(iso);
-    // Corrige huso horario al generar la fecha (solo fecha)
     const yyyy = d.getFullYear();
     const mm = String(d.getMonth() + 1).padStart(2, '0');
     const dd = String(d.getDate()).padStart(2, '0');
     return `${yyyy}-${mm}-${dd}`;
   }
 
-  /** Convierte yyyy-MM-dd a ISO conservando las 00:00 local */
+  /** yyyy-MM-dd -> ISO manteniendo 00:00 local */
   toISODate(dateStr: string): string {
     const [y, m, d] = dateStr.split('-').map(Number);
     const local = new Date(y, m - 1, d, 0, 0, 0);
     return local.toISOString();
   }
 
-  /** Reprograma fecha de entrega */
+  /** Reprograma fecha estimada */
   changeDeliveryDate(o: Order, dateStr: string) {
+    if (!dateStr) return;
     const iso = this.toISODate(dateStr);
-    this.orderService.updateDeliveryDate(o.id, iso).subscribe(updated => {
+    this.orderService.updateOrderDeliveryDate(o.id, iso).subscribe(updated => {
       if (updated) {
-        o.deliveryDate = updated.deliveryDate;
-        this.flash(`📅 Nueva fecha de entrega para ${o.orderNumber}: ${dateStr}`);
+        // Campo de backend: estimatedDelivery
+        o.estimatedDelivery = updated.estimatedDelivery;
+        this.flash(`📅 Nueva fecha de entrega para pedido ${o.id}: ${dateStr}`);
       }
     });
   }
 
-  /** Marca como entregado */
+  /** Marca pedido como entregado */
   markDelivered(o: Order) {
-    const ok = confirm(`¿Marcar el pedido ${o.orderNumber} como entregado?`);
+    const ok = confirm(`¿Marcar el pedido ${o.id} como entregado?`);
     if (!ok) return;
 
-    this.orderService.markDelivered(o.id).subscribe(updated => {
+    this.orderService.markOrderDelivered(o.id).subscribe(updated => {
       if (updated) {
-        // Lo removemos de la lista local para que desaparezca
+        // Lo removemos de la lista
         this.orders = this.orders.filter(x => x.id !== o.id);
-        this.flash(`✅ Pedido ${o.orderNumber} marcado como entregado.`);
+        this.flash(`✅ Pedido ${o.id} marcado como entregado.`);
       }
     });
   }
@@ -86,5 +84,4 @@ export class OrdersComponent {
     this.message = msg;
     setTimeout(() => (this.message = ''), 3000);
   }
-
 }

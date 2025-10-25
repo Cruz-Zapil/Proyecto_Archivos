@@ -1,33 +1,33 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router, UrlTree } from '@angular/router';
+import { CanActivateFn, Router, ActivatedRouteSnapshot, UrlTree } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { UserRole } from '../models/user';
 
-
 /**
- * auth.guard.ts
- * --------------
- * Protección de rutas.
- * Verifica si el usuario está logueado y si cumple con el rol necesario.
- * Temporalmente usa AuthService con mock de sesión.
+ * AuthGuard
+ * ----------
+ * Protege rutas que requieren sesión (JWT) y, opcionalmente, roles.
+ * Permanente: usa AuthService para validar token y roles.
  */
 
 
-export const authGuard: CanActivateFn = (route, state): boolean | UrlTree => {
+export const authGuard: CanActivateFn = (route: ActivatedRouteSnapshot): boolean | UrlTree => {
   const auth = inject(AuthService);
   const router = inject(Router);
 
-  // Si no hay sesión → al login
+  // 1) Sesión
   if (!auth.isLoggedIn()) {
-    return router.createUrlTree(['/login'], { queryParams: { redirect: state.url }});
+    // Usa la URL actual completa para redirect (incluye hijos)
+    const redirect = window.location.pathname + window.location.search;
+    return router.createUrlTree(['/login'], { queryParams: { redirect } });
   }
 
-  // Si la ruta define roles, validarlos
-  const allowed = route.data?.['roles'] as UserRole[] | undefined;
+  // 2) Roles (si la ruta los define)
+  const allowed: UserRole[] | undefined = route.data?.['roles'];
   if (allowed?.length && !auth.hasAnyRole(allowed)) {
-    // Si no tiene permiso, mandarlo al home/catalogo o a una página 403
+    // sin permiso
     return router.createUrlTree(['/']);
   }
-/// todo ok
+
   return true;
 };

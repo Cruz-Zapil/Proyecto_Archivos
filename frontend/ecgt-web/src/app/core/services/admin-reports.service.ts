@@ -1,91 +1,62 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, of } from 'rxjs';
 import { HttpService } from './http.service';
-import { MockApiService } from '../../mocks/mock-api.service';
+import { Observable } from 'rxjs';
 
 /**
  * AdminReportsService
-
- * Servicio de reportes del administrador (mock temporal).
- * Proporciona métricas y estadísticas en formato listo para usar en gráficos.
- * Luego se conectará al backend Spring Boot mediante HttpService.
+ * -------------------
+ * Reportes administrativos (top ventas, clientes, sanciones, notificaciones).
+ * Permanente: todas las llamadas van a Spring Boot.
  */
 
-// Tipos base para los reportes
-export interface ProductReport {
-  productName: string;
-  totalSold: number;
-  totalRevenue: number;
+// Rango de fechas (ISO)
+export interface DateRange {
+  start?: string; // '2025-10-01'
+  end?: string;   // '2025-10-31'
 }
 
-export interface ClientReport {
-  clientName: string;
-  value: number;
-}
+// Tipos de respuesta (ajústalos a tu backend)
+export interface TopProductItem { productName: string; totalSold: number; totalRevenue: number; }
+export interface TopClientItem { clientName: string; value: number; }
+export interface SanctionItem { user: string; reason: string; date: string; active: boolean; }
+export interface NotificationItem { user: string; message: string; sentAt: string; }
 
-export interface Sanction {
-  user: string;
-  reason: string;
-  date: string;
-  active: boolean;
-}
-
-export interface Notification {
-  user: string;
-  message: string;
-  sentAt: string;
-}
-
-/** Parámetros de filtro por fecha (ISO) */
-export interface ReportRange {
-  start?: string; // ISO 8601 (inclusive)
-  end?: string;   // ISO 8601 (inclusive)
-}
-
-
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class AdminReportsService {
-  constructor() {}
-
   private http = inject(HttpService);
-  private mock = inject(MockApiService);
 
-  /** Top 10 productos más vendidos */
-  getTopProducts(range?: any): Observable<ProductReport[]> {
-    // return this.http.get<ProductReport[]>('/admin/reports/top-products');
-    return of(this.mock.topProducts());
+  private q(range?: DateRange) {
+    const qs: string[] = [];
+    if (range?.start) qs.push(`start=${encodeURIComponent(range.start)}`);
+    if (range?.end) qs.push(`end=${encodeURIComponent(range.end)}`);
+    return qs.length ? `?${qs.join('&')}` : '';
   }
 
-  /** Top 5 clientes con más ganancias generadas */
-  getTopClientsByRevenue(range?: any): Observable<ClientReport[]> {
-    // return this.http.get<ClientReport[]>('/admin/reports/top-clients-revenue');
-    return of(this.mock.topClientsByRevenue());
+  getTopProducts(range?: DateRange): Observable<TopProductItem[]> {
+    return this.http.get<TopProductItem[]>(`/admin/reports/top-products${this.q(range)}`);
   }
 
-  /** Top 5 clientes con más productos vendidos */
-  getTopClientsBySales(range?: any): Observable<ClientReport[]> {
-    return of(this.mock.topClientsBySales());
+  getTopClientsByRevenue(range?: DateRange): Observable<TopClientItem[]> {
+    return this.http.get<TopClientItem[]>(`/admin/reports/top-clients/revenue${this.q(range)}`);
   }
 
-  /** Top 10 clientes con más pedidos */
-  getTopClientsByOrders(range?: any): Observable<ClientReport[]> {
-    return of(this.mock.topClientsByOrders());
+  getTopClientsBySales(range?: DateRange): Observable<TopClientItem[]> {
+    return this.http.get<TopClientItem[]>(`/admin/reports/top-clients/sales${this.q(range)}`);
   }
 
-  /** Top 10 clientes con más productos en venta */
-  getTopClientsByProducts(range?: any): Observable<ClientReport[]> {
-    return of(this.mock.topClientsByProducts());
+  getTopClientsByOrders(range?: DateRange): Observable<TopClientItem[]> {
+    return this.http.get<TopClientItem[]>(`/admin/reports/top-clients/orders${this.q(range)}`);
   }
 
-  /** Historial de sanciones */
-  getSanctions(range?: any): Observable<Sanction[]> {
-    return of(this.mock.listSanctions());
+  getTopClientsByProducts(range?: DateRange): Observable<TopClientItem[]> {
+    return this.http.get<TopClientItem[]>(`/admin/reports/top-clients/products${this.q(range)}`);
   }
 
-  /** Historial de notificaciones */
-  getNotifications(range?: any): Observable<Notification[]> {
-    return of(this.mock.listNotifications());
+  getSanctions(range?: DateRange): Observable<SanctionItem[]> {
+    return this.http.get<SanctionItem[]>(`/admin/reports/sanctions${this.q(range)}`);
+  }
+
+  getNotifications(range?: DateRange): Observable<NotificationItem[]> {
+    return this.http.get<NotificationItem[]>(`/admin/reports/notifications${this.q(range)}`);
   }
 }

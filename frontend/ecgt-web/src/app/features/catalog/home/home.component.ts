@@ -1,21 +1,16 @@
 import { Component, computed, signal } from '@angular/core';
 import { CommonModule, NgFor, NgIf } from '@angular/common';
-
-import { MockApiService } from '../../../mocks/mock-api.service';
 import { ProductCardComponent } from '../../../shared/ui/product-card.component';
 import { ProductFiltersComponent } from '../../../shared/ui/product-filters.component';
 import { PaginatorComponent } from '../../../shared/ui/paginator.component';
-import { Product } from '../../../core/models/product';
+import { Product, ProductCategory } from '../../../core/models/product';
+import { ProductService, ApiProductResp, PageResp } from '../../../core/services/product.service';
 
 /**
- * Home con:
- * - búsqueda por texto (q)
- * - orden (price_asc, price_desc, new, popular[placeholder])
- * - paginación simple (page/pageSize) en memoria
- *
- * NOTAS:
- * - Cuando conectemos al backend, enviaremos estos filtros como query params.
- * - Cada vez que cambie q o sort, reseteamos a page=1 para UX.
+ * HomeComponent
+ * --------------
+ * Catálogo público: productos aprobados del backend.
+ * Incluye búsqueda local, orden y paginación simple.
  */
 
 @Component({
@@ -26,54 +21,109 @@ import { Product } from '../../../core/models/product';
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent {
-
-
-  // Estado de filtros
+  // Filtros
   q = signal('');
-  sort = signal<'popular'|'price_asc'|'price_desc'|'new'>('popular');
+  sort = signal<'popular' | 'price_asc' | 'price_desc' | 'new'>('popular');
 
   // Paginación
   page = signal(1);
   readonly pageSize = 12;
 
-  constructor(private api: MockApiService) {}
+  // Estado
+  loading = true;
+  pageResp: PageResp<ApiProductResp> | null = null;
 
-  // Lista filtrada por texto
-  private byText = computed<Product[]>(() => this.api.listProducts(this.q()));
+  constructor(private products: ProductService) {}
 
-  // Orden aplicado sobre la lista filtrada
-  private ordered = computed<Product[]>(() => {
+  ngOnInit() {
+    this.load();
+  }
+
+  /** Carga productos desde backend */
+  load() {
+    this.loading = true;
+    const page0 = this.page() - 1;
+
+    this.products.listPublic(page0, this.pageSize).subscribe({
+      next: (resp) => {
+        this.pageResp = resp;
+        this.loading = false;
+      },
+      error: () => {
+        this.pageResp = { content: [], totalElements: 0, totalPages: 1, number: 0, size: this.pageSize };
+        this.loading = false;
+      }
+    });
+  }
+
+  /** Filtro de texto */
+  private byText = computed<ApiProductResp[]>(() => {
+    const q = this.q().trim().toLowerCase();
+    const data = this.pageResp?.content ?? [];
+    if (!q) return data;
+    return data.filter(p =>
+      (p.name ?? '').toLowerCase().includes(q) ||
+      (p.description ?? '').toLowerCase().includes(q)
+    );
+  });
+
+  /** Orden local */
+  private ordered = computed<ApiProductResp[]>(() => {
     const list = [...this.byText()];
     switch (this.sort()) {
-      case 'price_asc':  return list.sort((a,b) => a.price - b.price);
-      case 'price_desc': return list.sort((a,b) => b.price - a.price);
-      case 'new':        return list.sort((a,b) => (b.status === 'APPROVED' ? 1 : 0) - (a.status === 'APPROVED' ? 1 : 0)); // placeholder
-      default:           return list; // 'popular' placeholder
+      case 'price_asc': return list.sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
+      case 'price_desc': return list.sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
+      case 'new': return list; // pendiente de campo fecha
+      default: return list;
     }
   });
 
-  // Total y páginas
-  total = computed(() => this.ordered().length);
-  pages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize)));
+  /** Conversión a modelo UI Product */
+  paged = computed<Product[]>(() =>
+    this.ordered().map(p => ({
+      id: p.id,
+      name: p.name,
+      description: p.description ?? '',
+      price: p.price,
+      stock: p.stock,
+      condition: p.condition, // 'NEW' | 'USED'
+      status: p.reviewStatus === 'APPROVED' ? 'APPROVED' : 'PENDING_REVIEW',
+      category: this.toCategory(p.categories?.[0]),
+      imageUrl: '' // placeholder (luego se agregará soporte de imágenes)
+    }))
+  );
 
-  // Slice paginado a mostrar
-  paged = computed<Product[]>(() => {
-    const start = (this.page() - 1) * this.pageSize;
-    return this.ordered().slice(start, start + this.pageSize);
-  });
+  total = computed(() => this.pageResp?.totalElements ?? this.paged().length);
+  pages = computed(() => this.pageResp?.totalPages ?? 1);
 
-  // Handlers
+  /** Handlers UI */
   onSearch(value: string) {
     this.q.set(value);
-    this.page.set(1); // reset
+    this.page.set(1);
   }
 
   onSort(value: string) {
     this.sort.set(value as any);
-    this.page.set(1); // reset
+    this.page.set(1);
   }
 
   go(n: number) {
-    if (n >= 1 && n <= this.pages()) this.page.set(n);
+    if (n >= 1 && n <= this.pages()) {
+      this.page.set(n);
+      this.load();
+    }
+  }
+
+  /** Convierte string del backend a ProductCategory */
+  private toCategory(name?: string): ProductCategory | undefined {
+    switch ((name ?? '').toUpperCase()) {
+      case 'TECHNOLOGY': return 'TECHNOLOGY';
+      case 'HOME':       return 'HOME';
+      case 'ACADEMIC':   return 'ACADEMIC';
+      case 'PERSONAL':   return 'PERSONAL';
+      case 'DECORATION': return 'DECORATION';
+      case 'OTHER':      return 'OTHER';
+      default:           return undefined;
+    }
   }
 }

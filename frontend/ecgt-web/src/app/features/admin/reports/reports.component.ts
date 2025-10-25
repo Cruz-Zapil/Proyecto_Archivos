@@ -9,11 +9,18 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
-  AdminReportsService,
-  ProductReport, ClientReport, Sanction, Notification, ReportRange
+  AdminReportsService, TopProductItem, TopClientItem, SanctionItem, DateRange
 } from '../../../core/services/admin-reports.service';
 import { NgChartsModule } from 'ng2-charts';
 import { ChartConfiguration, ChartOptions } from 'chart.js';
+
+
+// Aliases de compatibilidad con componentes viejos (para que compile)
+export type ProductReport = TopProductItem;
+export type ClientReport = TopClientItem;
+export type Sanction = SanctionItem;
+export type ReportRange = DateRange;
+
 
 @Component({
   selector: 'app-admin-reports',
@@ -80,7 +87,7 @@ export class AdminReportsComponent {
     this.reports.getTopClientsByOrders(range).subscribe(r => { this.topClientsOrders = r; this.buildClientsOrdersChart(); });
     this.reports.getTopClientsByProducts(range).subscribe(r => { this.topClientsProducts = r; this.buildClientsProductsChart(); });
     this.reports.getSanctions(range).subscribe(r => { this.sanctions = r; this.buildSanctionsChart(); });
-    this.reports.getNotifications(range).subscribe(r => { this.notifications = r; this.buildNotificationsChart(); });
+  //  this.reports.getNotifications(range).subscribe(r => { this.notifications = r; this.buildNotificationsChart(); });
 
     setTimeout(() => this.loading = false, 350);
   }
@@ -146,6 +153,7 @@ export class AdminReportsComponent {
     const resolved = this.sanctions.length - active;
     this.chartSanctions = { labels: ['Activas', 'Resueltas'], datasets: [{ data: [active, resolved] }] };
   }
+/*
   private buildNotificationsChart() {
     const map = new Map<string, number>();
     for (const n of this.notifications) {
@@ -157,6 +165,7 @@ export class AdminReportsComponent {
     const values = labels.map(k => map.get(k) ?? 0);
     this.chartNotifications = { labels, datasets: [{ data: values, label: 'Notificaciones enviadas' }] };
   }
+  */
 
   setTab(tab: string) { this.activeTab = tab; }
 }

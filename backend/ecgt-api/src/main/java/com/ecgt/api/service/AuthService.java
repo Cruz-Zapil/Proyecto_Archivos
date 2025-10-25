@@ -1,49 +1,89 @@
+
 package com.ecgt.api.service;
 
-import com.ecgt.api.model.*;
-import com.ecgt.api.repository.*;
+import com.ecgt.api.dto.AuthRequest;
+import com.ecgt.api.dto.AuthResponse;
+import com.ecgt.api.dto.RegisterRequest;
+import com.ecgt.api.model.Role;
+import com.ecgt.api.model.User;
+import com.ecgt.api.repository.RoleRepository;
+import com.ecgt.api.repository.UserRepository;
+import com.ecgt.api.security.JwtService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Map;
 import java.util.Optional;
 
 /**
  * AuthService
- * -----------
- * Maneja login y registro de usuarios 
+ * ------------
+ * Maneja el registro y login de usuarios.
+ * Temporal (sin JWT aún): devuelve AuthResponse con usuario y token "fake".
+ * Permanente: se extenderá para emitir tokens JWT.
  */
-
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final JwtService jwtService; // ✅ inyección nueva
 
-  private final UserRepository userRepo;
-  private final RoleRepository roleRepo;
-  private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    /// -- Registro ---
 
-  public User register(String nombre, String email, String password) {
-    if (userRepo.findByEmail(email).isPresent())
-      throw new RuntimeException("El correo ya está registrado");
+     public AuthResponse register(RegisterRequest req) {
+        Role commonRole = roleRepository.findByName("COMMON")
+                .orElseThrow(() -> new RuntimeException("Rol COMMON no existe"));
 
-    Role roleCommon = roleRepo.findByNombre("COMMON")
-        .orElseThrow(() -> new RuntimeException("Rol COMMON no existe"));
+        if (userRepository.findByEmail(req.getEmail()).isPresent()) {
+            throw new RuntimeException("El correo ya está registrado");
+        }
 
-    User user = User.builder()
-        .nombre(nombre)
-        .email(email)
-        .passwordHash(encoder.encode(password))
-        .role(roleCommon)
-        .enabled(true)
-        .build();
+        User user = User.builder()
+                .name(req.getName())
+                .email(req.getEmail())
+                .passwordHash(passwordEncoder.encode(req.getPassword()))
+                .role(commonRole)
+                .enabled(true)
+                .build();
 
-    return userRepo.save(user);
-  }
+        userRepository.save(user);
 
-  public Optional<User> login(String email, String password) {
-    return userRepo.findByEmail(email)
-        .filter(u -> encoder.matches(password, u.getPasswordHash()));
-  }
-    
+        // ✅ JWT real
+        String token = jwtService.generateToken(
+                user.getEmail(),
+                Map.of("role", user.getRole().getName())
+        );
+
+        return AuthResponse.builder()
+                .accessToken(token)
+                .user(user)
+                .build();
+    }
+
+    // --- Login ---
+    public AuthResponse login(AuthRequest req) {
+        User user = userRepository.findByEmail(req.getEmail())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (!passwordEncoder.matches(req.getPassword(), user.getPasswordHash())) {
+            throw new RuntimeException("Contraseña incorrecta");
+        }
+
+        String token = jwtService.generateToken(
+                user.getEmail(),
+                Map.of("role", user.getRole().getName())
+        );
+
+        return AuthResponse.builder()
+                .accessToken(token)
+                .user(user)
+                .build();
+    }
+
 }

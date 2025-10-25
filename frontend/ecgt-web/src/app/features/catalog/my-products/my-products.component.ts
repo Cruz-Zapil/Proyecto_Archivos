@@ -1,16 +1,15 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { ProductService } from '../../../core/services/product.service';
 import { Product } from '../../../core/models/product';
-import { RouterLink } from '@angular/router';
 
 /**
  * MyProductsComponent
- * Muestra los productos creados por el usuario que vende. Usa ProductService
- * (mock) para listar los productos. Más adelante permitirá editar/eliminar.
+ * --------------------
+ * Muestra los productos creados por el usuario autenticado.
+ * Temporalmente obtiene los productos del backend o mock.
  */
-
-
 @Component({
   selector: 'app-my-products',
   standalone: true,
@@ -18,54 +17,48 @@ import { RouterLink } from '@angular/router';
   templateUrl: './my-products.component.html',
   styleUrls: ['./my-products.component.scss']
 })
-export class MyProductsComponent {
+export class MyProductsComponent implements OnInit {
 
-
-   private productService = inject(ProductService);
+  private productService = inject(ProductService);
 
   products: Product[] = [];
-  loading = true;
-    message = '';
+  loading = false;
+  message = '';
 
   ngOnInit() {
-    // Simula obtener productos del usuario actual
-    this.productService.getByUser('mock-user').subscribe(res => {
-      this.products = res;
-      this.loading = false;
-    });
+    this.loadMyProducts();
   }
 
-
-  /** Recarga la lista */
-  loadProducts() {
+  /** Carga productos del usuario autenticado */
+  loadMyProducts() {
     this.loading = true;
-    this.productService.getByUser('mock-user').subscribe(res => {
-      this.products = res;
-      this.loading = false;
-    });
-  }
-
-  /**  Elimina un producto tras confirmación */
-  deleteProduct(p: Product) {
-    const confirmDelete = confirm(
-      `¿Seguro que deseas eliminar "${p.name}"? Esta acción no se puede deshacer.`
-    );
-    if (!confirmDelete) return;
-
-    this.productService.delete(p.id).subscribe(success => {
-      if (success) {
-        this.message = '✅ Producto eliminado correctamente.';
-        // actualiza lista en memoria
-        this.products = this.products.filter(prod => prod.id !== p.id);
-      } else {
-        this.message = '❌ No se pudo eliminar el producto.';
+    this.productService.listMine().subscribe({
+      next: (res: any) => {
+        // Si el backend devuelve PageResp
+        this.products = res.content ?? res;
+        this.loading = false;
+      },
+      error: (err) => {
+        this.message = '❌ Error al cargar tus productos.';
+        this.loading = false;
       }
-
-      // limpiar mensaje tras 3s
-      setTimeout(() => (this.message = ''), 3000);
     });
   }
 
+  /** Elimina un producto */
+  deleteProduct(p: Product) {
+    if (!confirm(`¿Seguro que deseas eliminar "${p.name}"?`)) return;
 
-
+    this.productService.deleteMine(p.id!).subscribe({
+      next: () => {
+        this.products = this.products.filter(prod => prod.id !== p.id);
+         this.message = '🗑️ Producto eliminado.';
+         setTimeout(() => (this.message = ''), 2500);
+      },
+      error: (err) => {
+        this.message = '❌ Error al eliminar producto.';
+        setTimeout(() => (this.message = ''), 2500);
+      }
+    });
+  }
 }

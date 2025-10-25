@@ -3,6 +3,8 @@ package com.ecgt.api.model;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 
 /**
  * Entidad User
@@ -12,15 +14,15 @@ import java.time.Instant;
  */
 
  @Entity
-@Table(name = "\"user\"") // "user" es palabra reservada en SQL
+@Table(name = "\"users\"") // "user" es palabra reservada en SQL
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class User {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
-  private String id;
+  private UUID id;
 
-  private String nombre;
+  private String name;
 
   @Column(unique = true, nullable = false)
   private String email;
@@ -28,13 +30,15 @@ public class User {
   @Column(name = "password_hash", nullable = false)
   private String passwordHash;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "role_id")
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "role_id", nullable = false)
   private Role role;
 
-  private boolean enabled = true;
+ private Boolean enabled = true;
 
-  private Instant createdAt = Instant.now();
-  private Instant updatedAt = Instant.now();
+  @Column(name = "created_at")
+  private OffsetDateTime createdAt;
 
+  @Column(name = "updated_at")
+  private OffsetDateTime updatedAt;
 }

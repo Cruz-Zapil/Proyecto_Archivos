@@ -18,6 +18,7 @@ import { Router } from '@angular/router';
   templateUrl: './sell-product.component.html',
   styleUrls: ['./sell-product.component.scss'],
 })
+
 export class SellProductComponent {
   private productService = inject(ProductService);
   private router = inject(Router);
@@ -63,8 +64,8 @@ export class SellProductComponent {
     this.loading = true;
 
     const obs = this.isEditMode
-      ? this.productService.update(this.product)
-      : this.productService.create(this.product);
+      ? this.productService.updateFromUiModel(this.product)
+      : this.productService.createFromUiModel(this.product);
 
     obs.subscribe({
       next: () => {

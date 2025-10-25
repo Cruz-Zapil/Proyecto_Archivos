@@ -1,5 +1,5 @@
-
 <div class="surface p-4 rounded-3 shadow-sm">
+  <!-- Encabezado -->
   <div class="d-flex align-items-center justify-content-between mb-4">
     <h2 class="m-0"><i class="bi bi-people"></i> Empleados</h2>
     <button class="btn btn-outline-secondary btn-sm" (click)="load()">
@@ -8,57 +8,85 @@
   </div>
 
   <!-- Formulario -->
-  <form class="row g-3 mb-4" (ngSubmit)="save()">
-    <div class="col-md-4">
-      <input type="text" [(ngModel)]="newUser.nombre" name="nombre" class="form-control" placeholder="Nombre" required />
-    </div>
-    <div class="col-md-4">
-      <input type="email" [(ngModel)]="newUser.email" name="email" class="form-control" placeholder="Correo" required />
-    </div>
+  <form class="row g-3 mb-4" #f="ngForm" (ngSubmit)="save(f)">
     <div class="col-md-3">
-      <select [(ngModel)]="newUser.roles" name="rol" class="form-select">
-        <option *ngFor="let r of roles" [ngValue]="[r]">{{ r }}</option>
+      <input
+        type="text"
+        [(ngModel)]="form.name"
+        name="name"
+        class="form-control"
+        placeholder="Nombre"
+        required />
+    </div>
+
+    <div class="col-md-3">
+      <input
+        type="email"
+        [(ngModel)]="form.email"
+        name="email"
+        class="form-control"
+        placeholder="Correo"
+        required />
+    </div>
+
+    <div class="col-md-3">
+      <input
+        type="password"
+        [(ngModel)]="form.password"
+        name="password"
+        class="form-control"
+        placeholder="Contraseña"
+        [required]="!form.id" />
+    </div>
+
+    <div class="col-md-2">
+      <select [(ngModel)]="form.role" name="role" class="form-select">
+        <option value="COMMON">Vendedor</option>
+        <option value="MODERATOR">Moderador</option>
+        <option value="LOGISTICS">Logística</option>
+        <option value="ADMIN">Administrador</option>
       </select>
     </div>
+
     <div class="col-md-1 text-end">
-      <button class="btn btn-primary w-100" type="submit">
-        {{ editing ? 'Actualizar' : 'Agregar' }}
+      <button class="btn btn-primary w-100" type="submit" [disabled]="loading || f.invalid">
+        {{ form.id ? 'Actualizar' : 'Agregar' }}
       </button>
     </div>
   </form>
 
-  <!-- Estado -->
+  <!-- Cargando -->
   <div *ngIf="loading" class="text-center py-4">
     <div class="spinner-border text-primary"></div>
   </div>
 
   <!-- Tabla -->
-  <div *ngIf="!loading && employees.length > 0" class="table-responsive">
+  <div *ngIf="!loading && users.length > 0" class="table-responsive">
     <table class="table align-middle">
-      <thead>
+      <thead class="table-light">
         <tr>
           <th>Nombre</th>
           <th>Correo</th>
           <th>Rol</th>
           <th>Estado</th>
-          <th class="text-end"></th>
+          <th class="text-end">Acciones</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let e of employees">
-          <td>{{ e.nombre }}</td>
-          <td>{{ e.email }}</td>
-          <td>{{ e.roles[0] }}</td>
+        <tr *ngFor="let u of users">
+          <td>{{ u.name }}</td>
+          <td>{{ u.email }}</td>
+          <td>{{ u.role }}</td>
           <td>
-            <span class="badge" [ngClass]="e.activo ? 'bg-success' : 'bg-secondary'">
-              {{ e.activo ? 'Activo' : 'Inactivo' }}
+            <span class="badge" [ngClass]="u.enabled ? 'bg-success' : 'bg-secondary'">
+              {{ u.enabled ? 'Activo' : 'Inactivo' }}
             </span>
           </td>
           <td class="text-end">
-            <button class="btn btn-sm btn-outline-primary me-1" (click)="edit(e)">
+            <button class="btn btn-sm btn-outline-primary me-1" (click)="edit(u)">
               <i class="bi bi-pencil"></i>
             </button>
-            <button class="btn btn-sm btn-outline-danger" (click)="remove(e)">
+            <button class="btn btn-sm btn-outline-danger" (click)="remove(u)">
               <i class="bi bi-trash"></i>
             </button>
           </td>
@@ -67,6 +95,13 @@
     </table>
   </div>
 
+  <!-- Sin datos -->
+  <div *ngIf="!loading && users.length === 0" class="text-center py-5 text-muted">
+    <i class="bi bi-person-x"></i>
+    <p class="mt-2">No hay empleados registrados.</p>
+  </div>
+
+  <!-- Mensaje -->
   <div *ngIf="message" class="alert alert-info small mt-3 text-center">
     {{ message }}
   </div>

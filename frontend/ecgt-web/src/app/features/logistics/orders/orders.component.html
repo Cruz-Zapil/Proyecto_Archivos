@@ -35,28 +35,28 @@
       <tbody>
         <tr *ngFor="let o of orders">
           <td>
-            <div class="fw-semibold">{{ o.orderNumber }}</div>
-            <div class="text-muted small">{{ o.placedAt | date:'short' }}</div>
+            <div class="fw-semibold">{{ $any(o).orderNumber }}</div>
+            <div class="text-muted small">{{ $any(o).placedAt | date:'short' }}</div>
           </td>
           <td>
-            <div>{{ o.customerName }}</div>
-            <div class="text-muted small" *ngIf="o.address">{{ o.address }}</div>
+            <div>{{ $any(o).customerName }}</div>
+            <div class="text-muted small" *ngIf="$any(o).address">{{ $any(o).address }}</div>
           </td>
           <td>
             <ul class="list-unstyled small mb-0">
               <li *ngFor="let it of o.items">
-                ×{{ it.qty }} — {{ it.product.name }}
+                ×{{ it.qty }} — {{ $any(it).product?.name }}
               </li>
             </ul>
           </td>
           <td class="fw-semibold">
-            {{ o.total | currency:'GTQ':'symbol-narrow':'1.2-2' }}
+            {{ $any(o).total | currency:'GTQ':'symbol-narrow':'1.2-2' }}
           </td>
           <td style="min-width: 180px;">
             <input
               type="date"
               class="form-control form-control-sm"
-              [value]="toDateInput(o.deliveryDate)"
+              [value]="toDateInput($any(o).deliveryDate)"
               (change)="changeDeliveryDate(o, $any($event.target)?.value)"
             />
           </td>

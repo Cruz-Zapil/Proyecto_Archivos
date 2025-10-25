@@ -51,7 +51,7 @@ export interface User {
  */
 export interface AuthResponse {
   accessToken: string;       // JWT principal
-  refreshToken?: string;     // opcional si implementas refresh
+  token?: string;     // opcional si implementas refresh
   user: User;
 }
 
