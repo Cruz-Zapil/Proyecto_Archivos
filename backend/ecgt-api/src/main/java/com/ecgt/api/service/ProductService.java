@@ -65,7 +65,7 @@ public class ProductService {
   }
 
   @Transactional
-  public Resp updateOwn(UUID sellerId, UUID productId, UpdateReq req) {
+public Resp updateOwn(UUID sellerId, UUID productId, UpdateReq req) {
     Product p = productRepo.findByIdAndSellerId(productId, sellerId)
         .orElseThrow(() -> new RuntimeException("Producto no encontrado o no autorizado"));
 
@@ -77,13 +77,17 @@ public class ProductService {
     if (req.getStock() != null) p.setStock(req.getStock());
     if (req.getCondition() != null) p.setCondition(req.getCondition());
 
-    if (req.getCategoryIds() != null) p.setCategories(loadCategories(req.getCategoryIds()));
+    if (req.getCategoryIds() != null)
+        p.setCategories(loadCategories(req.getCategoryIds()));
 
-    // Cada actualización vuelve a revisión
+    // ⚠️ IMPORTANTE: vuelve a revisión, pero no crea otro
     p.setReviewStatus(ProductStatus.PENDING);
 
     return toResp(p);
-  }
+}
+
+
+  
 
   public Page<Resp> listMine(UUID sellerId, int page, int size) {
     Page<Product> pg = productRepo.findBySeller(

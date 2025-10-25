@@ -82,4 +82,5 @@ public class Product {
     public void preUpdate() {
         updatedAt = OffsetDateTime.now();
     }
+    
 }

@@ -50,10 +50,11 @@ public class SellerProductController {
   }
 
   /**  Actualizar producto */
-  @PutMapping("/{id}")
-  public ResponseEntity<Resp> update(@PathVariable UUID id, @RequestBody UpdateReq req) {
-    return ResponseEntity.ok(productService.updateOwn(currentUserId(), id, req));
-  }
+@PutMapping("/{id}")
+public Resp update(@PathVariable UUID id, @RequestBody UpdateReq req) {
+  return productService.updateOwn(currentUserId(), id, req);
+}
+
 
     /**  Eliminar producto */
   @DeleteMapping("/{id}")

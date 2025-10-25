@@ -31,16 +31,17 @@ public class ProductDtos {
     private List<String> imageUrls;     // opcional (solo URL)
   }
 
-  @Data
-  public static class UpdateReq {
-    private String name;
-    private String description;
-    private BigDecimal price;
-    private Integer stock;
-    private ProductCondition condition;
-    private List<UUID> categoryIds;
-    private List<String> imageUrls;
-  }
+@Data
+public static class UpdateReq {
+  private String name;
+  private String description;
+  private BigDecimal price;
+  private Integer stock;                // >= 1
+  private ProductCondition condition;   // NEW / USED  (mapea a status_product)
+  private List<UUID> categoryIds;
+  private List<String> imageUrls;
+}
+
 
   @Builder @Data
   public static class Resp {
