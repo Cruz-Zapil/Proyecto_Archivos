@@ -1,158 +1,99 @@
-<div class="container my-5">
-  <div class="d-flex align-items-center justify-content-between mb-4">
-    <h2 class="section-title m-0">
-      <i class="bi bi-credit-card"></i> Checkout
-    </h2>
-    <a routerLink="/cart" class="btn btn-outline-light btn-sm">
-      <i class="bi bi-cart3 me-1"></i> Ver carrito
-    </a>
-  </div>
+<!-- Formulario -->
+<div class="col-12 col-lg-7">
+  <div class="surface p-4">
+    <h5 class="mb-3">Pago con tarjeta</h5>
 
-  <!-- Carrito vacío -->
-  <div *ngIf="items().length === 0; else formTpl" class="surface p-5 text-center">
-    <div class="display-6 mb-3">🛒</div>
-    <h4 class="mb-2">Tu carrito está vacío</h4>
-    <p class="text-muted mb-4">Agrega productos para continuar con el pago.</p>
-    <a routerLink="/" class="btn btn-primary">
-      <i class="bi bi-grid me-2"></i> Ir al catálogo
-    </a>
-  </div>
-
-  <!-- Formulario + Resumen -->
-  <ng-template #formTpl>
-    <div class="row g-4">
-      <!-- Formulario -->
-      <div class="col-12 col-lg-7">
-        <div class="surface p-4">
-          <h5 class="mb-3">Pago con tarjeta</h5>
-
-          <form (ngSubmit)="submit()" #f="ngForm" autocomplete="off" novalidate>
-            <!-- Nombre -->
-            <div class="mb-3">
-              <label for="cc-name" class="form-label">Nombre en la tarjeta</label>
-              <input
-                id="cc-name"
-                name="name"
-                class="form-control"
-                [(ngModel)]="name"
-                required
-                placeholder="Como aparece en la tarjeta"
-              />
-              <div class="form-text text-danger" *ngIf="f.submitted && !name">
-                Este campo es obligatorio.
-              </div>
-            </div>
-
-            <!-- Número -->
-            <div class="mb-3">
-              <label for="cc-number" class="form-label">Número de tarjeta (demo)</label>
-              <div class="input-group">
-                <span class="input-group-text bg-transparent border-end-0">
-                  <i class="bi bi-credit-card-2-front"></i>
-                </span>
-                <input
-                  id="cc-number"
-                  name="card"
-                  class="form-control border-start-0"
-                  [(ngModel)]="card"
-                  required
-                  pattern="^[0-9]{13,19}$"
-                  inputmode="numeric"
-                  placeholder="4111111111111111"
-                />
-              </div>
-              <div class="form-text text-danger" *ngIf="f.submitted && !cardValid()">
-                Ingresa 13–19 dígitos.
-              </div>
-            </div>
-
-            <!-- Exp / CVV -->
-            <div class="row g-3">
-              <div class="col-6">
-                <label for="cc-exp" class="form-label">MM/YY</label>
-                <input
-                  id="cc-exp"
-                  name="exp"
-                  class="form-control"
-                  [(ngModel)]="exp"
-                  required
-                  pattern="^(0[1-9]|1[0-2])\\/\\d{2}$"
-                  placeholder="12/28"
-                  inputmode="numeric"
-                />
-                <div class="form-text text-danger" *ngIf="f.submitted && !exp">
-                  Ejemplo válido: 08/27
-                </div>
-              </div>
-              <div class="col-6">
-                <label for="cc-cvv" class="form-label">CVV</label>
-                <input
-                  id="cc-cvv"
-                  name="cvv"
-                  class="form-control"
-                  [(ngModel)]="cvv"
-                  required
-                  pattern="^\\d{3,4}$"
-                  placeholder="123"
-                  inputmode="numeric"
-                />
-                <div class="form-text text-danger" *ngIf="f.submitted && !cvv">
-                  3 o 4 dígitos.
-                </div>
-              </div>
-            </div>
-
-            <!-- Botón pagar -->
-            <button
-              class="btn btn-primary btn-lg w-100 mt-4"
-              [disabled]="!f.form.valid"
-              type="submit"
-            >
-              <i class="bi bi-shield-lock me-2"></i>
-              Pagar {{ total() | currency:'GTQ':'symbol-narrow':'1.2-2' }}
-            </button>
-
-            <!-- Notas -->
-            <div class="d-flex align-items-center gap-2 mt-3 text-muted small">
-              <i class="bi bi-lock"></i><span>Demo: no se procesa ningún pago real.</span>
-            </div>
-          </form>
+    <form (ngSubmit)="submit(f)" #f="ngForm" autocomplete="off" novalidate>
+      <!-- Nombre -->
+      <div class="mb-3">
+        <label for="cc-name" class="form-label">Nombre en la tarjeta</label>
+        <input
+          id="cc-name"
+          name="name"
+          class="form-control"
+          [(ngModel)]="name"
+          required
+          placeholder="Como aparece en la tarjeta"
+        />
+        <div *ngIf="f.submitted && !name" class="invalid-feedback d-block">
+          ⚠️ Ingresa el nombre que aparece en la tarjeta.
         </div>
       </div>
 
-      <!-- Resumen -->
-      <div class="col-12 col-lg-5">
-        <div class="surface p-4 position-sticky top-3 order-summary">
-          <h5 class="mb-3">Resumen del pedido</h5>
-
-          <ul class="list-group list-group-flush mb-3">
-            <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center"
-                *ngFor="let i of items()">
-              <div class="me-3">
-                <div class="fw-semibold text-truncate">{{ i.product.name }}</div>
-                <small class="text-muted">x{{ i.qty }}</small>
-              </div>
-              <div class="text-end">
-                {{ (i.product.price * i.qty) | currency:'GTQ':'symbol-narrow':'1.2-2' }}
-              </div>
-            </li>
-          </ul>
-
-          <div class="d-flex justify-content-between text-muted mb-2">
-            <span>Envío</span>
-            <span>Calculado al pagar</span>
-          </div>
-
-          <div class="d-flex justify-content-between align-items-center py-3 border-top">
-            <span class="fw-semibold">Total</span>
-            <span class="fs-4 price">{{ total() | currency:'GTQ':'symbol-narrow':'1.2-2' }}</span>
-          </div>
-
-          <a routerLink="/cart" class="btn btn-outline-light w-100 mt-3">
-            <i class="bi bi-pencil-square me-2"></i> Editar carrito
-          </a>
+      <!-- Número -->
+      <div class="mb-3">
+        <label for="cc-number" class="form-label">Número de tarjeta</label>
+        <div class="input-group">
+          <span class="input-group-text bg-transparent border-end-0">
+            <i class="bi bi-credit-card-2-front"></i>
+          </span>
+          <input
+            id="cc-number"
+            name="card"
+            class="form-control border-start-0"
+            [(ngModel)]="card"
+            required
+            pattern="[0-9]{13,19}"
+            inputmode="numeric"
+            placeholder="4111111111111111"
+          />
+        </div>
+        <div *ngIf="f.submitted && !cardValid()" class="invalid-feedback d-block">
+          ⚠️ El número debe tener entre 13 y 19 dígitos.
         </div>
       </div>
-    </div>
-  </ng-template>
+
+      <!-- Exp / CVV -->
+      <div class="row g-3">
+        <div class="col-6">
+          <label for="cc-exp" class="form-label">Expiración (MM/YY)</label>
+          <input
+            id="cc-exp"
+            name="exp"
+            class="form-control"
+            [(ngModel)]="exp"
+            required
+            pattern="(0[1-9]|1[0-2])/[0-9]{2}"
+            placeholder="12/28"
+            inputmode="numeric"
+          />
+          <div *ngIf="f.submitted && !expValid()" class="invalid-feedback d-block">
+            ⚠️ Usa el formato correcto: MM/YY (ejemplo 08/27).
+          </div>
+        </div>
+
+        <div class="col-6">
+          <label for="cc-cvv" class="form-label">CVV</label>
+          <input
+            id="cc-cvv"
+            name="cvv"
+            class="form-control"
+            [(ngModel)]="cvv"
+            required
+            pattern="[0-9]{3,4}"
+            placeholder="123"
+            inputmode="numeric"
+          />
+          <div *ngIf="f.submitted && !cvvValid()" class="invalid-feedback d-block">
+            ⚠️ El CVV debe tener 3 o 4 dígitos.
+          </div>
+        </div>
+      </div>
+
+      <!-- Botón pagar -->
+      <button
+        class="btn btn-primary btn-lg w-100 mt-4"
+        [disabled]="!formValid()"
+        type="submit"
+      >
+        <i class="bi bi-shield-lock me-2"></i>
+        Pagar {{ total() | currency:'GTQ':'symbol-narrow':'1.2-2' }}
+      </button>
+
+      <!-- Nota -->
+      <div class="d-flex align-items-center gap-2 mt-3 text-muted small">
+        <i class="bi bi-lock"></i><span>Demo: no se procesa ningún pago real.</span>
+      </div>
+    </form>
+  </div>
 </div>

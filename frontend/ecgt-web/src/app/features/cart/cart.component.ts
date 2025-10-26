@@ -27,9 +27,17 @@ export class CartComponent {
   items = this.cart.items;
   total = computed(() => this.cart.total());
 
-  remove(id: string) {
-    this.cart.remove(id);
+    ngOnInit(): void {
+    // 🔄 sincroniza carrito al entrar a la página
+    this.cart.loadFromServer();
   }
+
+
+  remove(productId: string): void {
+    this.cart.remove(productId);
+  }
+
+
 
   clear() {
     this.cart.clear();

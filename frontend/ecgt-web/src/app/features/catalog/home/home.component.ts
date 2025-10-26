@@ -6,13 +6,6 @@ import { PaginatorComponent } from '../../../shared/ui/paginator.component';
 import { Product, ProductCategory } from '../../../core/models/product';
 import { ProductService, ApiProductResp, PageResp } from '../../../core/services/product.service';
 
-/**
- * HomeComponent
- * --------------
- * Catálogo público: productos aprobados del backend.
- * Incluye búsqueda local, orden y paginación simple.
- */
-
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -21,7 +14,7 @@ import { ProductService, ApiProductResp, PageResp } from '../../../core/services
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent {
-  // Filtros
+  // Estado de búsqueda / orden
   q = signal('');
   sort = signal<'popular' | 'price_asc' | 'price_desc' | 'new'>('popular');
 
@@ -29,7 +22,7 @@ export class HomeComponent {
   page = signal(1);
   readonly pageSize = 12;
 
-  // Estado
+  // Estado general
   loading = true;
   pageResp: PageResp<ApiProductResp> | null = null;
 
@@ -56,7 +49,7 @@ export class HomeComponent {
     });
   }
 
-  /** Filtro de texto */
+  /** Filtro de texto (local) */
   private byText = computed<ApiProductResp[]>(() => {
     const q = this.q().trim().toLowerCase();
     const data = this.pageResp?.content ?? [];
@@ -73,25 +66,26 @@ export class HomeComponent {
     switch (this.sort()) {
       case 'price_asc': return list.sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
       case 'price_desc': return list.sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
-      case 'new': return list; // pendiente de campo fecha
       default: return list;
     }
   });
 
   /** Conversión a modelo UI Product */
-  paged = computed<Product[]>(() =>
-    this.ordered().map(p => ({
+  paged = computed<Product[]>(() => {
+    const items = this.ordered();
+    if (!items.length) return [];
+    return items.map(p => ({
       id: p.id,
-      name: p.name,
+      name: p.name ?? 'Sin nombre',
       description: p.description ?? '',
-      price: p.price,
-      stock: p.stock,
-      condition: p.condition, // 'NEW' | 'USED'
+      price: p.price ?? 0,
+      stock: p.stock ?? 0,
+      condition: p.condition ?? 'NEW',
       status: p.reviewStatus === 'APPROVED' ? 'APPROVED' : 'PENDING_REVIEW',
       category: this.toCategory(p.categories?.[0]),
-      imageUrl: '' // placeholder (luego se agregará soporte de imágenes)
-    }))
-  );
+      imageUrl: (p as any).imageUrls?.[0] ?? 'https://placehold.co/400x300?text=Producto'
+    }));
+  });
 
   total = computed(() => this.pageResp?.totalElements ?? this.paged().length);
   pages = computed(() => this.pageResp?.totalPages ?? 1);
@@ -116,14 +110,10 @@ export class HomeComponent {
 
   /** Convierte string del backend a ProductCategory */
   private toCategory(name?: string): ProductCategory | undefined {
-    switch ((name ?? '').toUpperCase()) {
-      case 'TECHNOLOGY': return 'TECHNOLOGY';
-      case 'HOME':       return 'HOME';
-      case 'ACADEMIC':   return 'ACADEMIC';
-      case 'PERSONAL':   return 'PERSONAL';
-      case 'DECORATION': return 'DECORATION';
-      case 'OTHER':      return 'OTHER';
-      default:           return undefined;
-    }
+    if (!name) return undefined;
+    const upper = name.toUpperCase();
+    if (['TECHNOLOGY','HOME','ACADEMIC','PERSONAL','DECORATION','OTHER'].includes(upper))
+      return upper as ProductCategory;
+    return undefined;
   }
 }

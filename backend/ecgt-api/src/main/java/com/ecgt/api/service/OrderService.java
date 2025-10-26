@@ -40,11 +40,11 @@ public class OrderService {
      */
     @Transactional
     public OrderResponse checkout(CheckoutRequest req) {
-        // ✅ 1. Obtener usuario
+        //  1. Obtener usuario
         User user = userRepo.findById(req.getUserId())
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        // ✅ 2. Crear orden base
+        //  2. Crear orden base
         Order order = Order.builder()
             .user(user)
             .estado("EN_CURSO")
@@ -53,13 +53,21 @@ public class OrderService {
             .build();
         orderRepo.save(order);
 
-        // ✅ 3. Agregar ítems de la orden
+        //  3. Agregar ítems de la orden
         BigDecimal total = BigDecimal.ZERO;
         for (CheckoutItemDTO i : req.getItems()) {
             var product = productRepo.findById(i.getProductId())
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
             total = total.add(product.getPrice().multiply(BigDecimal.valueOf(i.getQty())));
+
+                    //  Resta stock
+        if (product.getStock() < i.getQty()) {
+            throw new RuntimeException("Stock insuficiente para " + product.getName());
+        }
+        product.setStock(product.getStock() - i.getQty());
+
+
 
             OrderItem item = OrderItem.builder()
                 .order(order)
@@ -71,7 +79,7 @@ public class OrderService {
             orderItemRepo.save(item);
         }
 
-        // ✅ 4. Registrar pago
+        //  4. Registrar pago
         Payment payment = Payment.builder()
             .order(order)
             .user(user)
@@ -82,7 +90,7 @@ public class OrderService {
             .build();
         paymentRepo.save(payment);
 
-        // ✅ 5. Respuesta simplificada
+        //  5. Respuesta simplificada
         return new OrderResponse(order.getId(), total.doubleValue(), order.getFechaEntregaEstimada());
     }
 

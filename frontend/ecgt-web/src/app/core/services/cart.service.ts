@@ -1,50 +1,131 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, signal, inject, Injector } from '@angular/core';
 import { Product } from '../models/product';
+import { HttpService } from './http.service';
+import { AuthService } from './auth.service';
+
+export interface CartItem {
+  productId: string;
+  product: Product;
+  qty: number;
+}
+
+export interface CartResponse {
+  cartId: string;
+  items: {
+    productId: string;
+    productName: string;
+    quantity: number;
+    price: number;
+  }[];
+}
 
 /**
- * CartService
- * -------------
- * Mantiene en memoria la lista de productos del carrito usando Signals.
- * Más adelante lo conectaremos con backend (Spring) o localStorage.
+ * CartService (v4)
+ * ----------------
+ * - Persiste el carrito en backend (tabla cart/cart_items).
+ * - Sincroniza al iniciar sesión.
+ * - Usa signals + lazy injection para evitar ciclos.
  */
 @Injectable({ providedIn: 'root' })
 export class CartService {
+  private http = inject(HttpService);
+  private injector = inject(Injector);
 
-  // Estado reactivo: lista de ítems (producto + cantidad)
-  private _items = signal<{ id: string; product: Product; qty: number }[]>([]);
+  private get auth(): AuthService {
+    return this.injector.get(AuthService);
+  }
 
-  // Lectura pública (solo lectura)
+  private _items = signal<CartItem[]>([]);
   items = this._items.asReadonly();
 
-  // Total calculado automáticamente cuando cambia items
   total = computed(() =>
-    this._items().reduce((sum, i) => sum + i.product.price * i.qty, 0)
+    this._items().reduce((sum, i) => sum + (i.product?.price ?? 0) * i.qty, 0)
   );
 
-  /** Agregar un producto al carrito */
-  add(item: { id: string; product: Product; qty: number }) {
-    const existing = this._items().find(i => i.product.id === item.product.id);
+  /** 🔄 Cargar carrito desde backend */
+  loadFromServer(): void {
+    const user = this.auth.user();
+    if (!user) return;
 
-    if (existing) {
-      // Si ya existe, actualizamos cantidad
-      this._items.set(
-        this._items().map(i =>
-          i.product.id === item.product.id ? { ...i, qty: i.qty + item.qty } : i
-        )
-      );
-    } else {
-      // Si es nuevo, lo agregamos
-      this._items.set([...this._items(), item]);
+    this.http.get<CartResponse>(`/cart/${user.id}`).subscribe({
+      next: res => {
+        const mapped = res.items.map(i => ({
+          productId: i.productId,
+          product: {
+            id: i.productId,
+            name: i.productName,
+            price: i.price,
+            description: '',
+            stock: 0,
+            condition: 'NEW'
+          } as Product,
+          qty: i.quantity
+        }));
+        this._items.set(mapped);
+      },
+      error: () => this._items.set([])
+    });
+  }
+
+  /** ➕ Agregar producto al carrito */
+  add(product: Product, qty: number): void {
+    const user = this.auth.user();
+    if (!user) {
+      alert('Debes iniciar sesión para agregar productos al carrito.');
+      return;
     }
+
+    this.http
+      .post(`/cart/${user.id}`, {
+        productId: product.id,
+        quantity: qty
+      })
+      .subscribe({
+        next: () => this.loadFromServer(),
+        error: err => console.error('Error al agregar al carrito', err)
+      });
   }
 
-  /** Eliminar un ítem por ID */
-  remove(id: string) {
-    this._items.set(this._items().filter(i => i.id !== id));
+  /** 🔁 Actualizar cantidad de producto */
+  update(productId: string, qty: number): void {
+    const user = this.auth.user();
+    if (!user) return;
+
+    this.http
+      .post(`/cart/${user.id}`, {
+        productId,
+        quantity: qty
+      })
+      .subscribe({
+        next: () => this.loadFromServer(),
+        error: err => console.error('Error al actualizar carrito', err)
+      });
   }
 
-  /** Vaciar el carrito */
-  clear() {
-    this._items.set([]);
+  /** ❌ Eliminar producto */
+  remove(productId: string): void {
+    const user = this.auth.user();
+    if (!user) return;
+
+    this.http.delete(`/cart/${user.id}/item/${productId}`).subscribe({
+      next: () => this.loadFromServer(),
+      error: err => console.error('Error al eliminar producto', err)
+    });
+  }
+
+  /** 🧹 Vaciar carrito */
+  clear(): void {
+    const user = this.auth.user();
+    if (!user) return;
+
+    this.http.delete(`/cart/${user.id}`).subscribe({
+      next: () => this._items.set([]),
+      error: err => console.error('Error al limpiar carrito', err)
+    });
+  }
+
+  /** ⚙️ Sincronizar al iniciar sesión */
+  syncFromBackend(): void {
+    this.loadFromServer();
   }
 }

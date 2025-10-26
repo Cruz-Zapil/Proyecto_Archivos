@@ -3,7 +3,11 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { NgIf } from '@angular/common';
 import { CartService } from '../../core/services/cart.service';
-import { ProductService, ApiProductResp, PageResp } from '../../core/services/product.service';
+import {
+  ProductService,
+  ApiProductResp,
+  PageResp,
+} from '../../core/services/product.service';
 
 /**
  * ProductComponent
@@ -18,7 +22,7 @@ import { ProductService, ApiProductResp, PageResp } from '../../core/services/pr
   standalone: true,
   imports: [CommonModule, NgIf, RouterLink],
   templateUrl: './product.component.html',
-  styleUrls: ['./product.component.scss']
+  styleUrls: ['./product.component.scss'],
 })
 export class ProductComponent {
   product?: ApiProductResp;
@@ -37,17 +41,17 @@ export class ProductComponent {
     // Reemplaza por: this.products.getPublicById(id).subscribe(...)
     this.products.listPublic(0, 200).subscribe({
       next: (page: PageResp<ApiProductResp>) => {
-        this.product = page.content.find(p => p.id === id);
+        this.product = page.content.find((p) => p.id === id);
         this.loading = false;
       },
-      error: () => this.loading = false
+      error: () => (this.loading = false),
     });
   }
 
   addToCart() {
     if (!this.product) return;
 
-    // ⚠️ Mapeo mínimo a tu modelo de carrito (ajústalo a tu CartItem/Product UI).
+    //  Mapeo mínimo a tu modelo de carrito (ajústalo a tu CartItem/Product UI).
     const uiProduct: any = {
       id: this.product.id,
       name: this.product.name,
@@ -57,14 +61,13 @@ export class ProductComponent {
       status: 'APPROVED',
       stock: this.product.stock,
       condition: this.product.condition,
-      category: this.product.categories?.[0] ?? 'OTHER'
+      category: this.product.categories?.[0] ?? 'OTHER',
     };
 
-    this.cart.add({
-      id: crypto.randomUUID(),
-      product: uiProduct,
-      qty: 1
-    });
+    this.cart.add(
+      { ...this.product!, description: this.product!.description ?? '' },
+      1
+    );
 
     alert(`${this.product.name} agregado al carrito 🛒`);
   }
