@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -18,6 +19,10 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+
+// @Configuration
+@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true)
+
 public class SecurityConfig {
 
   private final JwtAuthFilter jwtAuthFilter;
@@ -43,13 +48,11 @@ public class SecurityConfig {
             .permitAll()
 
             // Por rol (usa hasRole = espera ROLE_*)
-            
-            
+
+            .requestMatchers("/api/admin/**").hasRole("ADMIN")
             .requestMatchers("/api/moderation/**").hasRole("MODERATOR")
             .requestMatchers("/api/logistics/**").hasRole("LOGISTICS")
             .requestMatchers("/api/seller/**").hasAnyRole("COMMON", "ADMIN")
-            .requestMatchers("/api/admin/**").hasRole("ADMIN")
-            
 
             // Demás
             .anyRequest().authenticated())

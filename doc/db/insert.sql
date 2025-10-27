@@ -25,3 +25,9 @@ VALUES
 ('Roberto Sánchez', 'roberto.sanchez@example.com',   '$2a$10$ZUoOR9VU6JhbJtmp2ZnK6eMo/4k4rWcBMvn9KG8tFL2LDnHdmJXJ2', (SELECT id FROM roles WHERE name='LOGISTICS')),
 ('Elena Vargas', 'elena.vargas@example.com',         '$2a$10$ZUoOR9VU6JhbJtmp2ZnK6eMo/4k4rWcBMvn9KG8tFL2LDnHdmJXJ2', (SELECT id FROM roles WHERE name='LOGISTICS')),
 ('Miguel Ruiz', 'miguel.ruiz@example.com',           '$2a$10$ZUoOR9VU6JhbJtmp2ZnK6eMo/4k4rWcBMvn9KG8tFL2LDnHdmJXJ2', (SELECT id FROM roles WHERE name='LOGISTICS'));
+
+
+--- usuario admin para pruebas
+INSERT INTO users (name, email, password_hash, role_id)
+VALUES
+('Admin User', 'admin.user@example.com', '$2a$10$ZUoOR9VU6JhbJtmp2ZnK6eMo/4k4rWcBMvn9KG8tFL2LDnHdmJXJ2', (SELECT id FROM roles WHERE name='ADMIN'));

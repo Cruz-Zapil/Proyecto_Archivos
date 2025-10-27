@@ -153,6 +153,19 @@ CREATE TABLE notification (
   fecha_envio TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+---  ========================================================
+---  Índices para optimización de consultas
+---  ========================================================
+
+CREATE INDEX IF NOT EXISTS idx_orders_fecha  ON orders(fecha_creacion);
+CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
+CREATE INDEX IF NOT EXISTS idx_products_vendedor ON products(id_vendedor);
+CREATE INDEX IF NOT EXISTS idx_products_status_created ON products(status, created_at);
+CREATE INDEX IF NOT EXISTS idx_sanction_fecha ON sanction(fecha);
+CREATE INDEX IF NOT EXISTS idx_notification_fecha ON notification(fecha_envio);
+
+
+
  --- ========================================================
 ---  ingregos de Admin 
 ---  ========================================================
