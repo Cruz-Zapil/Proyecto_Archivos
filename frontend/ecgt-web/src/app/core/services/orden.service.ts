@@ -5,34 +5,48 @@ import { Observable } from 'rxjs';
 /**
  * OrdenService (Logistics)
  * ------------------------
- * Pedidos en curso, cambio de fecha y marcar entregado.
- * Permanente: endpoints /api/logistics/orders.
+ * Gestiona pedidos EN_CURSO, cambio de fecha y marcar entregado.
+ * Conecta con backend: /api/logistics/orders
  */
 
-export interface OrderItem { productName: string; qty: number; price: number; }
+export interface OrderItem {
+  quantity: number;                   // cantidad comprada
+  priceAtPurchase: number;            // precio unitario en compra
+  product?: { name: string };         // producto (nombre)
+}
+
 export interface Order {
   id: string;
-  userName: string;
-  status: 'EN_CURSO' | 'ENTREGADO';
-  createdAt: string;
-  estimatedDelivery?: string;
-  deliveredAt?: string;
-  items: OrderItem[];
+  estado: 'EN_CURSO' | 'ENTREGADO';
+  fechaCreacion: string;
+  fechaEntregaEstimada?: string;
+  fechaEntregado?: string;
+  user?: { name: string };            // cliente (opcional)
+  orderItems?: OrderItem[];           // ← ¡clave!
 }
 
 @Injectable({ providedIn: 'root' })
 export class OrdenService {
   private http = inject(HttpService);
 
+  /** Obtener todos los pedidos en curso */
   listOrdersInProgress(): Observable<Order[]> {
-    return this.http.get<Order[]>('/logistics/orders?status=EN_CURSO');
+    return this.http.get<Order[]>('/logistics/orders/in-progress');
   }
 
+  /** Cambiar la fecha estimada de entrega */
   updateOrderDeliveryDate(id: string, isoDate: string): Observable<Order> {
-    return this.http.put<Order>(`/logistics/orders/${id}/estimated-delivery`, { date: isoDate });
+    return this.http.put<Order>(
+      `/logistics/orders/${id}/update-delivery-date?date=${isoDate}`,
+      {}
+    );
   }
 
+  /** Marcar un pedido como entregado */
   markOrderDelivered(id: string): Observable<Order> {
-    return this.http.post<Order>(`/logistics/orders/${id}/deliver`, {});
+    return this.http.put<Order>(
+      `/logistics/orders/${id}/mark-delivered`,
+      {}
+    );
   }
 }

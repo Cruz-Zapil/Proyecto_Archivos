@@ -44,10 +44,12 @@ public class SecurityConfig {
 
             // Por rol (usa hasRole = espera ROLE_*)
             
-            .requestMatchers("/api/seller/**").hasAnyRole("COMMON", "ADMIN")
+            
             .requestMatchers("/api/moderation/**").hasRole("MODERATOR")
             .requestMatchers("/api/logistics/**").hasRole("LOGISTICS")
+            .requestMatchers("/api/seller/**").hasAnyRole("COMMON", "ADMIN")
             .requestMatchers("/api/admin/**").hasRole("ADMIN")
+            
 
             // Demás
             .anyRequest().authenticated())

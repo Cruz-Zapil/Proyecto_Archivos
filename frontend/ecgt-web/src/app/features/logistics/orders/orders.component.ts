@@ -9,7 +9,6 @@ import { OrdenService, Order } from '../../../core/services/orden.service';
  * Lista pedidos EN_CURSO, permite reprogramar fecha estimada y marcar entregado.
  * Permanente: usa OrdenService (HTTP).
  */
-
 @Component({
   selector: 'app-orders',
   standalone: true,
@@ -30,7 +29,7 @@ export class OrdersComponent {
   load() {
     this.loading = true;
     this.orderService.listOrdersInProgress().subscribe({
-      next: (res) => { this.orders = res; this.loading = false; },
+      next: (res) => { this.orders = res ?? []; this.loading = false; },
       error: () => { this.orders = []; this.loading = false; }
     });
   }
@@ -58,8 +57,7 @@ export class OrdersComponent {
     const iso = this.toISODate(dateStr);
     this.orderService.updateOrderDeliveryDate(o.id, iso).subscribe(updated => {
       if (updated) {
-        // Campo de backend: estimatedDelivery
-        o.estimatedDelivery = updated.estimatedDelivery;
+        o.fechaEntregaEstimada = updated.fechaEntregaEstimada; // ← nombre correcto
         this.flash(`📅 Nueva fecha de entrega para pedido ${o.id}: ${dateStr}`);
       }
     });
@@ -72,11 +70,19 @@ export class OrdersComponent {
 
     this.orderService.markOrderDelivered(o.id).subscribe(updated => {
       if (updated) {
-        // Lo removemos de la lista
         this.orders = this.orders.filter(x => x.id !== o.id);
         this.flash(`✅ Pedido ${o.id} marcado como entregado.`);
       }
     });
+  }
+
+  /** Calcula total del pedido con los campos reales del backend */
+  total(o: Order): number {
+    const items = o.orderItems ?? [];
+    return items.reduce((sum, it) => {
+      const unit = Number((it as any).priceAtPurchase ?? 0);
+      return sum + unit * (it.quantity ?? 0);
+    }, 0);
   }
 
   /** Mensaje temporal */
