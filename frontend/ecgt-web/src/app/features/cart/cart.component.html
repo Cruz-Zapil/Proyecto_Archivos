@@ -29,7 +29,7 @@
           <tr *ngFor="let i of items()">
             <td>
               <div class="fw-semibold">{{ i.product.name }}</div>
-              <small class="text-muted">ID: {{ i.productId | slice:0:8 }}</small>
+              <small class="text-muted">ID: {{ i.product.id | slice:0:8 }}</small>
             </td>
             <td class="text-center">{{ i.qty }}</td>
             <td class="text-end">
@@ -38,7 +38,7 @@
             <td class="text-end">
               <button
                 class="btn btn-sm btn-outline-danger"
-                (click)="remove(i.productId)"
+                (click)="remove(i.product.id)"
                 aria-label="Eliminar del carrito"
               >
                 <i class="bi bi-trash"></i>

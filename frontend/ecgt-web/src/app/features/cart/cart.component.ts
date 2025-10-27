@@ -27,10 +27,14 @@ export class CartComponent {
   items = this.cart.items;
   total = computed(() => this.cart.total());
 
-    ngOnInit(): void {
-    // 🔄 sincroniza carrito al entrar a la página
-    this.cart.loadFromServer();
+
+ngOnInit(): void {
+  const user = this.cart['auth'].user(); // accedemos al AuthService desde CartService
+  if (user) {
+    // solo si ya hay sesión activa
+    setTimeout(() => this.cart.loadFromServer(), 300);
   }
+}
 
 
   remove(productId: string): void {

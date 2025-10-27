@@ -51,19 +51,26 @@ export class ProductComponent {
   addToCart() {
     if (!this.product) return;
 
-    //  Mapeo mínimo a tu modelo de carrito (ajústalo a tu CartItem/Product UI).
+    //  Evita agregar productos sin stock
+    if (this.product.stock <= 0) {
+      alert(`❌ El producto "${this.product.name}" está agotado.`);
+      return;
+    }
+
+    // Mapeo mínimo del modelo
     const uiProduct: any = {
       id: this.product.id,
       name: this.product.name,
       description: this.product.description,
       price: this.product.price,
-      imageUrl: '', // si lo agregas en backend, mapea aquí
+      imageUrl: '',
       status: 'APPROVED',
       stock: this.product.stock,
       condition: this.product.condition,
       category: this.product.categories?.[0] ?? 'OTHER',
     };
 
+    //  Agregar al carrito
     this.cart.add(
       { ...this.product!, description: this.product!.description ?? '' },
       1

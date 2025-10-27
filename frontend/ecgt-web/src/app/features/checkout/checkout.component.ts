@@ -9,7 +9,7 @@ import { AuthService } from '../../core/services/auth.service';
   selector: 'app-checkout',
   standalone: true,
   imports: [CommonModule, FormsModule, NgFor, NgIf],
-  templateUrl: './checkout.component.html'
+  templateUrl: './checkout.component.html',
 })
 export class CheckoutComponent {
   constructor(
@@ -26,12 +26,20 @@ export class CheckoutComponent {
   exp = '';
   cvv = '';
 
-  cardValid() { return /^[0-9]{13,19}$/.test(this.card); }
-  expValid() { return /^(0[1-9]|1[0-2])\/[0-9]{2}$/.test(this.exp); }
-  cvvValid() { return /^[0-9]{3,4}$/.test(this.cvv); }
-  formValid() { return this.name.trim() && this.cardValid() && this.expValid() && this.cvvValid(); }
-
-
+  cardValid() {
+    return /^[0-9]{13,19}$/.test(this.card);
+  }
+  expValid() {
+    return /^(0[1-9]|1[0-2])\/[0-9]{2}$/.test(this.exp);
+  }
+  cvvValid() {
+    return /^[0-9]{3,4}$/.test(this.cvv);
+  }
+  formValid() {
+    return (
+      this.name.trim() && this.cardValid() && this.expValid() && this.cvvValid()
+    );
+  }
 
   submit(form: NgForm) {
     if (!this.formValid()) {
@@ -49,22 +57,24 @@ export class CheckoutComponent {
     const payload = {
       userId: user.id,
       metodoPago: 'TARJETA',
-      items: this.items().map(i => ({
+      items: this.items().map((i) => ({
         productId: i.product.id,
-        qty: i.qty
-      }))
+        qty: i.qty,
+      })),
     };
 
     this.checkoutSrv.checkout(payload).subscribe({
-      next: res => {
-        alert(`✅ Orden creada #${res.id}\nEntrega estimada: ${res.fechaEntregaEstimada}`);
+      next: (res) => {
+        alert(
+          `✅ Orden creada #${res.id}\nEntrega estimada: ${res.fechaEntregaEstimada}`
+        );
         this.cart.clear();
         this.router.navigateByUrl('/');
       },
-      error: err => {
-        console.error(err);
-        alert('❌ Error al procesar el pago');
-      }
+      error: (err) => {
+        const msg = err?.error?.message ?? '❌ Error al procesar el pedido';
+        alert(msg);
+      },
     });
   }
 }

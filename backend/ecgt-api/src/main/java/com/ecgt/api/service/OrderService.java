@@ -38,61 +38,76 @@ public class OrderService {
      * ----------
      * Crea una nueva orden, guarda los ítems y genera el pago asociado.
      */
-    @Transactional
-    public OrderResponse checkout(CheckoutRequest req) {
-        //  1. Obtener usuario
-        User user = userRepo.findById(req.getUserId())
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        //  2. Crear orden base
-        Order order = Order.builder()
-            .user(user)
-            .estado("EN_CURSO")
-            .fechaCreacion(OffsetDateTime.now())
-            .fechaEntregaEstimada(OffsetDateTime.now().plusDays(5))
-            .build();
-        orderRepo.save(order);
+     
+@Transactional
+public OrderResponse checkout(CheckoutRequest req) {
+    // 1) Usuario
+    User user = userRepo.findById(req.getUserId())
+        .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        //  3. Agregar ítems de la orden
-        BigDecimal total = BigDecimal.ZERO;
-        for (CheckoutItemDTO i : req.getItems()) {
-            var product = productRepo.findById(i.getProductId())
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+    // 2) Crear orden base
+    Order order = Order.builder()
+        .user(user)
+        .estado("EN_CURSO")
+        .fechaCreacion(OffsetDateTime.now())
+        .fechaEntregaEstimada(OffsetDateTime.now().plusDays(5))
+        .build();
+    orderRepo.save(order);
 
-            total = total.add(product.getPrice().multiply(BigDecimal.valueOf(i.getQty())));
+    // 3) Items + control de stock (y descuento)
+    BigDecimal total = BigDecimal.ZERO;
 
-                    //  Resta stock
-        if (product.getStock() < i.getQty()) {
-            throw new RuntimeException("Stock insuficiente para " + product.getName());
+    for (CheckoutItemDTO i : req.getItems()) {
+        var product = productRepo.findById(i.getProductId())
+            .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+        // Validaciones de stock
+        if (product.getStock() <= 0) {
+            throw new IllegalStateException("El producto '" + product.getName() + "' está agotado.");
         }
+        if (i.getQty() <= 0) {
+            throw new IllegalArgumentException("Cantidad inválida para '" + product.getName() + "'.");
+        }
+        if (i.getQty() > product.getStock()) {
+            throw new IllegalStateException(
+                "Stock insuficiente para '" + product.getName() + "'. Disponible: " + product.getStock()
+            );
+        }
+
+        // Descuento de stock y persistencia inmediata
         product.setStock(product.getStock() - i.getQty());
+        productRepo.save(product);
 
+        // Subtotal + total
+        BigDecimal line = product.getPrice().multiply(BigDecimal.valueOf(i.getQty()));
+        total = total.add(line);
 
-
-            OrderItem item = OrderItem.builder()
-                .order(order)
-                .product(product)
-                .quantity(i.getQty())
-                .priceAtPurchase(product.getPrice())
-                .build();
-
-            orderItemRepo.save(item);
-        }
-
-        //  4. Registrar pago
-        Payment payment = Payment.builder()
+        // Registrar item de orden con precio al momento de compra
+        OrderItem item = OrderItem.builder()
             .order(order)
-            .user(user)
-            .monto(total)
-            .metodo(req.getMetodoPago())
-            .estado("COMPLETADO")
-            .fechaPago(OffsetDateTime.now())
+            .product(product)
+            .quantity(i.getQty())
+            .priceAtPurchase(product.getPrice())
             .build();
-        paymentRepo.save(payment);
-
-        //  5. Respuesta simplificada
-        return new OrderResponse(order.getId(), total.doubleValue(), order.getFechaEntregaEstimada());
+        orderItemRepo.save(item);
     }
+
+    // 4) Pago (simulado)
+    Payment payment = Payment.builder()
+        .order(order)
+        .user(user)
+        .monto(total)
+        .metodo(req.getMetodoPago())
+        .estado("COMPLETADO")
+        .fechaPago(OffsetDateTime.now())
+        .build();
+    paymentRepo.save(payment);
+
+    // 5) Respuesta
+    return new OrderResponse(order.getId(), total.doubleValue(), order.getFechaEntregaEstimada());
+}
+
 
     /**
      * listMine()

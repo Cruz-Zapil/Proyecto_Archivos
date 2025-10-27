@@ -39,7 +39,9 @@ export class AuthService {
     const raw = res.user as any;
     const roles = Array.isArray(raw.roles)
       ? raw.roles
-      : (raw.role?.name ? [raw.role.name] : []);
+      : raw.role?.name
+      ? [raw.role.name]
+      : [];
 
     const { passwordHash, role, ...rest } = raw;
     const user: User = { ...rest, roles };
@@ -49,7 +51,9 @@ export class AuthService {
     this._user.set(user);
 
     // Cargar carrito persistente tras login
-   this.cart.syncFromBackend();
+    setTimeout(() => {
+      this.cart.syncOnLogin();
+    }, 500);
   }
 
   get token(): string | null {
@@ -66,6 +70,9 @@ export class AuthService {
   }
 
   logout() {
+    //  Guarda carrito antes de limpiar sesión
+    this.cart.syncOnLogout();
+
     localStorage.removeItem(ACCESS_TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     this._user.set(null);
