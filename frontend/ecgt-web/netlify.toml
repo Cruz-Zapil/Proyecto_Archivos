@@ -1,0 +1,23 @@
+[build]
+  publish = "dist/ecgt-web"
+
+# Proxy de TODO lo /api/* a ngrok (GET/POST/PUT/DELETE/OPTIONS)
+[[redirects]]
+  from = "/api/*"
+  to = "https://immaterially-superfoliaceous-lakesha.ngrok-free.dev/api/:splat"
+  status = 200
+  force = true
+
+# CORS: responde con los headers correctos (incluye Authorization)
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+    Access-Control-Allow-Headers = "Authorization, Content-Type"
+
+# SPA fallback
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

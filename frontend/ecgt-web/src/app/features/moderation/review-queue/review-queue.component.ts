@@ -12,7 +12,7 @@ import { FilterByNamePipe } from 'src/app/shared/pipes/filter-by-name.pipe';
  
  * Pantalla para moderadores.
  * Muestra los productos en estado PENDING_REVIEW y permite aprobar o rechazar.
- * Temporalmente usa ProductService con MockApiService (sin backend).
+
  */
 
 @Component({

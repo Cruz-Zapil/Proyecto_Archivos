@@ -64,14 +64,13 @@ public class SecurityConfig {
   @Bean
   CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration config = new CorsConfiguration();
-    config.setAllowedOrigins(java.util.List.of(
-        "http://localhost:4200",
-        "http://127.0.0.1:4200" // por si cambias
-    // "https://tu-sitio.netlify.app" // en producción
-    ));
-    config.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-    config.setAllowedHeaders(java.util.List.of("Authorization", "Content-Type", "X-Requested-With"));
-    config.setExposedHeaders(java.util.List.of("Authorization"));
+
+    // Durante la U, simplifica con patrón comodín
+    config.addAllowedOriginPattern("*"); // acepta Netlify y ngrok sin pelearse
+
+    config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+    config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
+    config.setExposedHeaders(List.of("Authorization"));
     config.setAllowCredentials(true);
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

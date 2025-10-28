@@ -1,4 +1,5 @@
+// src/environments/environment.prod.ts
 export const environment = {
   production: true,
-  apiUrl: 'https://tu-api.example.com/api/v1'
+  apiUrl: '/api'
 };
