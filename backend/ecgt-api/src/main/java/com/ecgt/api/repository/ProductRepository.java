@@ -32,7 +32,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
     /**
      * Listar productos por estado de revisión (APPROVED, PENDING, REJECTED...).
      */
-    Page<Product> findByReviewStatus(ProductStatus status, Pageable pageable);
+     Page<Product> findByReviewStatus(ProductStatus reviewStatus, Pageable pageable);
 
     /**
      * Buscar producto por ID y vendedor (para asegurar que sea suyo).

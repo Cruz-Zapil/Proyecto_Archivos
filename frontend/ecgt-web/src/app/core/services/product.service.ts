@@ -162,21 +162,19 @@ listPublic(page = 0, size = 12): Observable<PageResp<ApiProductResp>> {
 }
 
 
+
   // =============== VENDEDOR (COMMON) ===============
 
   /**
    * Productos del vendedor autenticado.
    * GET /api/seller/products?page=&size=
    */
-  listMine(page = 0, size = 12): Observable<PageResp<ApiProductResp>> {
-    return this.http
-      .get<any>('/seller/products', { page, size })
-      .pipe(
-        map((resp) =>
-          this.toPage<ApiProductResp>(resp, this.mapProduct, page, size)
-        )
-      );
-  }
+listMine(page = 0, size = 12): Observable<PageResp<ApiProductResp>> {
+  return this.http
+    .get<any>('/seller/products', { params: { page, size } })
+    .pipe(map(resp => this.toPage<ApiProductResp>(resp, this.mapProduct, page, size)));
+}
+
 
   /**
    * Crear producto (queda en PENDING).

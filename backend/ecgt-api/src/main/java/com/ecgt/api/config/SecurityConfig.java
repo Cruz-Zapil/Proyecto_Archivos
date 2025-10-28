@@ -4,6 +4,7 @@ import com.ecgt.api.security.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -38,6 +39,7 @@ public class SecurityConfig {
             // Preflight CORS
             .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
             // Rutas públicas
+
             .requestMatchers(
                 "/api/auth/**",
                 "/api/products/public/**",
@@ -47,8 +49,11 @@ public class SecurityConfig {
                 "/swagger-ui/**")
             .permitAll()
 
-            // Por rol (usa hasRole = espera ROLE_*)
+            // Reviews: GET público, POST requiere login
+            .requestMatchers(HttpMethod.GET, "/api/reviews/**").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/reviews/**").hasRole("COMMON")
 
+            // Rutas por rol
             .requestMatchers("/api/admin/**").hasRole("ADMIN")
             .requestMatchers("/api/moderation/**").hasRole("MODERATOR")
             .requestMatchers("/api/logistics/**").hasRole("LOGISTICS")

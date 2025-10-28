@@ -18,7 +18,7 @@ import lombok.*;
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class Role {
     
-      @Id
+    @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 

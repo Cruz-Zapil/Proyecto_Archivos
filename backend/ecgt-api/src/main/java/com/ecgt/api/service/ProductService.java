@@ -156,7 +156,7 @@ public Page<Resp> listPending(int page, int size) {
         ProductStatus.PENDING,
         PageRequest.of(page, size, Sort.by("createdAt").descending())
     );
-    System.out.println("🟡 Productos pendientes encontrados: " + pg.getTotalElements());
+    System.out.println(" Productos pendientes encontrados: " + pg.getTotalElements());
     return pg.map(this::toResp);
 }
 

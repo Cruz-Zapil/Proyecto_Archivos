@@ -8,7 +8,10 @@ import java.util.UUID;
  * --------
  * DTO de salida para la tabla de empleados en el front.
  */
-@Data @AllArgsConstructor
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+
 public class UserResp {
   private UUID id;
   private String name;

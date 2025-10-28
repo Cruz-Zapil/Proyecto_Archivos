@@ -28,11 +28,12 @@ export interface CreateEmployeePayload {
 
 @Injectable({ providedIn: 'root' })
 export class AdminService {
-  list() {
-    throw new Error('Method not implemented.');
-  }
+
+  
   private http = inject(HttpService);
 
+
+  
   listEmployees(): Observable<Employee[]> {
     return this.http.get<Employee[]>('/admin/users');
   }

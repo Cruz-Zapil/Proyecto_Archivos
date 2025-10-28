@@ -1,29 +1,39 @@
 <div class="container my-5">
   <ng-container *ngIf="product; else notFound">
     <div class="row g-4 align-items-start">
-      <!-- Imagen / thumbnail -->
+      <!-- 🖼️ Imagen / thumbnail -->
       <div class="col-12 col-md-6">
         <div class="surface p-3 p-sm-4 h-100 d-flex align-items-center justify-content-center">
           <div class="product-hero">
-            <img [src]="heroUrl" [alt]="product.name" loading="lazy" class="img-fluid rounded" />
-
+            <img
+              [src]="heroUrl"
+              [alt]="product.name"
+              loading="lazy"
+              class="img-fluid rounded"
+            />
           </div>
         </div>
       </div>
 
-      <!-- Info -->
+      <!-- 🧾 Información del producto -->
       <div class="col-12 col-md-6">
         <div class="surface p-4">
           <div class="d-flex align-items-center justify-content-between mb-2">
             <h2 class="m-0">{{ product.name }}</h2>
-            <span class="badge" [ngClass]="product.stock > 0 ? 'text-bg-success' : 'text-bg-danger'">
+            <span
+              class="badge"
+              [ngClass]="product.stock > 0 ? 'text-bg-success' : 'text-bg-danger'"
+            >
               {{ product.stock > 0 ? 'En stock' : 'Agotado' }}
             </span>
           </div>
 
           <p class="text-muted mb-3">{{ product.description }}</p>
 
-          <div class="d-flex align-items-center justify-content-between py-3 border-top border-bottom mb-3">
+          <!-- 💰 Precio y stock -->
+          <div
+            class="d-flex align-items-center justify-content-between py-3 border-top border-bottom mb-3"
+          >
             <div>
               <div class="text-muted small">Precio</div>
               <div class="price fs-3 m-0">
@@ -36,25 +46,23 @@
             </div>
           </div>
 
+          <!-- 🛒 Botones de acción -->
           <div class="d-grid gap-2">
-
-
-
-            <button class="btn btn-primary btn-lg" (click)="addToCart()" [disabled]="product.stock <= 0">
+            <button
+              class="btn btn-primary btn-lg"
+              (click)="addToCart()"
+              [disabled]="product.stock <= 0"
+            >
               <i class="bi bi-bag-plus me-2"></i>
               {{ product.stock > 0 ? 'Agregar al carrito' : 'Sin stock' }}
             </button>
 
-
-
             <a routerLink="/" class="btn btn-outline-light">
               <i class="bi bi-arrow-left me-2"></i> Regresar al inicio
             </a>
-
-
           </div>
 
-          <!-- Beneficios/seguridad -->
+          <!-- 🔒 Beneficios -->
           <ul class="list-unstyled d-flex gap-4 mt-4 text-muted small">
             <li class="d-flex align-items-center gap-2">
               <i class="bi bi-shield-check"></i> Pago seguro
@@ -69,14 +77,99 @@
         </div>
       </div>
     </div>
+
+    <!-- 💬 Sección de Reseñas -->
+    <div class="row mt-5">
+      <div class="col-12">
+        <div class="surface p-4 rounded-3 shadow-sm">
+          <h4 class="mb-3">
+            <i class="bi bi-chat-heart"></i> Reseñas de este producto
+          </h4>
+
+          <!-- 🧭 Listado de reseñas -->
+          <div *ngIf="reviews.length > 0; else noReviews">
+            <div
+              *ngFor="let r of reviews"
+              class="border-bottom py-2 d-flex justify-content-between"
+            >
+              <div>
+                <strong>{{ r.user?.name }}</strong>
+                <div class="text-warning small">
+                  <i *ngFor="let n of [].constructor(r.rating)" class="bi bi-star-fill"></i>
+                  <i *ngFor="let n of [].constructor(5 - r.rating)" class="bi bi-star"></i>
+                </div>
+                <p class="mb-1">{{ r.comment }}</p>
+              </div>
+              <div class="text-muted small text-end">
+                {{ r.createdAt | date:'shortDate' }}
+              </div>
+            </div>
+          </div>
+
+          <ng-template #noReviews>
+            <div class="text-muted text-center py-3">
+              <i class="bi bi-chat-left-dots"></i>
+              <p class="mt-2 mb-0">Aún no hay reseñas para este producto.</p>
+            </div>
+          </ng-template>
+
+          <!-- ✍️ Formulario de nueva reseña -->
+          <div class="mt-4">
+            <h6>Deja tu reseña</h6>
+            <form (ngSubmit)="submitReview(f)" #f="ngForm">
+              <div class="row g-3 align-items-center">
+                <div class="col-md-2">
+                  <label class="form-label mb-1 small">Calificación</label>
+                  <select
+                    class="form-select"
+                    [(ngModel)]="newReview.rating"
+                    name="rating"
+                    required
+                  >
+                    <option *ngFor="let n of [1,2,3,4,5]" [value]="n">{{ n }}</option>
+                  </select>
+                </div>
+
+                <div class="col-md-8">
+                  <label class="form-label mb-1 small">Comentario</label>
+                  <textarea
+                    class="form-control"
+                    rows="1"
+                    placeholder="Escribe tu opinión..."
+                    [(ngModel)]="newReview.comment"
+                    name="comment"
+                    required
+                  ></textarea>
+                </div>
+
+                <div class="col-md-2 text-end">
+                  <button
+                    type="submit"
+                    class="btn btn-primary w-100"
+                    [disabled]="f.invalid || submitting"
+                  >
+                    <i class="bi bi-send"></i>
+                    Enviar
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+        </div>
+      </div>
+    </div>
   </ng-container>
 
+  <!-- ❌ Producto no encontrado -->
   <ng-template #notFound>
     <div class="surface p-5 text-center">
       <div class="display-6 mb-3">🧭</div>
       <h4 class="mb-2">Producto no encontrado</h4>
-      <p class="text-muted mb-4">Es posible que la URL haya cambiado o el producto ya no exista.</p>
-      <a routerLink="/catalog" class="btn btn-primary">Volver al catálogo</a>
+      <p class="text-muted mb-4">
+        Es posible que la URL haya cambiado o el producto ya no exista.
+      </p>
+      <a routerLink="/" class="btn btn-primary">Volver al catálogo</a>
     </div>
   </ng-template>
 </div>
