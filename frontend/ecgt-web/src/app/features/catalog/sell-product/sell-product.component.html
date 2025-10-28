@@ -1,76 +1,121 @@
 <div class="surface p-4 rounded-3 shadow-sm">
-  <h2 class="mb-4"><i class="bi bi-box-seam"></i> Vender producto</h2>
+  <h2 class="mb-4">
+    <i class="bi bi-bag-plus"></i>
+    {{ isEditMode ? 'Editar producto' : 'Vender un nuevo producto' }}
+  </h2>
 
-  <form #f="ngForm" (ngSubmit)="submit(f)" novalidate>
-    <div class="row g-3">
-      <!-- Nombre -->
-      <div class="col-md-6">
-        <label class="form-label">Nombre</label>
-        <input type="text" class="form-control" name="name" [(ngModel)]="product.name" required />
-      </div>
+  <form #form="ngForm" (ngSubmit)="submit(form)">
+    <!-- Nombre -->
+    <div class="mb-3">
+      <label class="form-label">Nombre</label>
+      <input
+        class="form-control"
+        name="name"
+        [(ngModel)]="product.name"
+        required
+      />
+    </div>
 
-      <!-- Categoría -->
-      <div class="col-md-6">
-        <label class="form-label">Categoría</label>
-        <select class="form-select" name="category" [(ngModel)]="product.category">
-          <option value="TECHNOLOGY">Tecnología</option>
-          <option value="HOME">Hogar</option>
-          <option value="ACADEMIC">Académico</option>
-          <option value="PERSONAL">Personal</option>
-          <option value="DECORATION">Decoración</option>
-          <option value="OTHER">Otro</option>
-        </select>
-      </div>
+    <!-- Descripción -->
+    <div class="mb-3">
+      <label class="form-label">Descripción</label>
+      <textarea
+        class="form-control"
+        name="description"
+        [(ngModel)]="product.description"
+      ></textarea>
+    </div>
 
-      <!-- Descripción -->
-      <div class="col-12">
-        <label class="form-label">Descripción</label>
-        <textarea class="form-control" rows="3" name="description" [(ngModel)]="product.description" required></textarea>
-      </div>
+    <!-- Precio -->
+    <div class="mb-3">
+      <label class="form-label">Precio (GTQ)</label>
+      <input
+        type="number"
+        class="form-control"
+        name="price"
+        [(ngModel)]="product.price"
+        min="1"
+        required
+      />
+    </div>
 
-      <!-- Precio -->
-      <div class="col-md-4">
-        <label class="form-label">Precio (GTQ)</label>
-        <input type="number" class="form-control" name="price" [(ngModel)]="product.price" required min="1" />
-      </div>
+    <!-- Stock -->
+    <div class="mb-3">
+      <label class="form-label">Stock</label>
+      <input
+        type="number"
+        class="form-control"
+        name="stock"
+        [(ngModel)]="product.stock"
+        min="1"
+        required
+      />
+    </div>
 
-      <!-- Stock -->
-      <div class="col-md-4">
-        <label class="form-label">Stock</label>
-        <input type="number" class="form-control" name="stock" [(ngModel)]="product.stock" required min="1" />
-      </div>
+    <!-- Estado -->
+    <div class="mb-3">
+      <label class="form-label">Condición</label>
+      <select
+        class="form-select"
+        name="condition"
+        [(ngModel)]="product.condition"
+      >
+        <option value="NEW">Nuevo</option>
+        <option value="USED">Usado</option>
+      </select>
+    </div>
 
-      <!-- Estado -->
-      <div class="col-md-4">
-        <label class="form-label">Estado</label>
-        <select class="form-select" name="condition" [(ngModel)]="product.condition">
-          <option value="NEW">Nuevo</option>
-          <option value="USED">Usado</option>
-        </select>
-      </div>
-
-      <!-- Imagen -->
-      <div class="col-12">
-        <label class="form-label">Imagen del producto</label>
-        <input type="file" accept="image/*" class="form-control" (change)="onImageSelected($event)" />
-      </div>
-
-      <!-- Vista previa -->
-      <div class="col-12" *ngIf="previewUrl">
-        <div class="text-center mt-3">
-          <img [src]="previewUrl" class="img-thumbnail" style="max-height: 200px;" alt="Vista previa" />
-        </div>
-      </div>
-
-      <!-- Botón -->
-      <div class="col-12">
-        <button class="btn btn-primary" [disabled]="loading || !f.form.valid">
-          <i class="bi bi-upload me-2"></i> {{ loading ? 'Enviando...' : 'Publicar producto' }}
+    <!-- Imágenes -->
+    <div class="mb-3">
+      <label class="form-label">URLs de imágenes</label>
+      <div class="input-group mb-2">
+        <input
+          type="url"
+          class="form-control"
+          [(ngModel)]="newImageUrl"
+          name="newImageUrl"
+          placeholder="https://i.imgur.com/abc123.jpg"
+        />
+        <button
+          type="button"
+          class="btn btn-outline-primary"
+          (click)="addImage()"
+        >
+          Agregar
         </button>
+      </div>
+
+      <!-- Lista de imágenes -->
+      <div class="row g-2">
+        <div class="col-6 col-md-4" *ngFor="let img of images; let i = index">
+          <div class="position-relative">
+            <img [src]="img" class="img-fluid rounded border" />
+            <button
+              type="button"
+              class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1"
+              (click)="removeImage(i)"
+            >
+              &times;
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Mensaje -->
-    <div class="mt-3 fw-semibold text-success" *ngIf="message">{{ message }}</div>
+    <!-- Botón de guardar -->
+    <div class="mt-4 text-end">
+      <button
+        class="btn btn-primary"
+        type="submit"
+        [disabled]="loading"
+      >
+        {{ isEditMode ? 'Guardar cambios' : 'Publicar producto' }}
+      </button>
+    </div>
   </form>
+
+  <!-- Mensaje -->
+  <div *ngIf="message" class="alert alert-info mt-3 text-center small">
+    {{ message }}
+  </div>
 </div>

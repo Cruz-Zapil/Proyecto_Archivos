@@ -7,8 +7,8 @@ import { Product } from '../../../core/models/product';
 /**
  * MyProductsComponent
  * --------------------
- * Muestra los productos creados por el usuario autenticado.
- * Temporalmente obtiene los productos del backend o mock.
+ * Lista, edita y elimina productos del usuario autenticado.
+ * Temporal/Permanente: consume backend (o mock) y normaliza imágenes.
  */
 @Component({
   selector: 'app-my-products',
@@ -34,11 +34,21 @@ export class MyProductsComponent implements OnInit {
     this.loading = true;
     this.productService.listMine().subscribe({
       next: (res: any) => {
-        // Si el backend devuelve PageResp
-        this.products = res.content ?? res;
+        // Si el backend devuelve PageResp, viene en res.content. Si no, res es el array.
+        const items: Product[] = (res?.content ?? res) as Product[];
+
+        // Normaliza imágenes (si sólo hay imageUrl, lo “eleva” a imageUrls[0])
+        this.products = (items || []).map(p => {
+          if (!p.imageUrls || !p.imageUrls.length) {
+            const single = p.imageUrl ? [p.imageUrl] : [];
+            return { ...p, imageUrls: single };
+          }
+          return p;
+        });
+
         this.loading = false;
       },
-      error: (err) => {
+      error: () => {
         this.message = '❌ Error al cargar tus productos.';
         this.loading = false;
       }
@@ -49,13 +59,13 @@ export class MyProductsComponent implements OnInit {
   deleteProduct(p: Product) {
     if (!confirm(`¿Seguro que deseas eliminar "${p.name}"?`)) return;
 
-    this.productService.deleteMine(p.id!).subscribe({
+    this.productService.deleteMine(p.id).subscribe({
       next: () => {
         this.products = this.products.filter(prod => prod.id !== p.id);
-         this.message = '🗑️ Producto eliminado.';
-         setTimeout(() => (this.message = ''), 2500);
+        this.message = '🗑️ Producto eliminado.';
+        setTimeout(() => (this.message = ''), 2500);
       },
-      error: (err) => {
+      error: () => {
         this.message = '❌ Error al eliminar producto.';
         setTimeout(() => (this.message = ''), 2500);
       }

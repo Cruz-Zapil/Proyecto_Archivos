@@ -1,7 +1,6 @@
-
 <div class="surface p-4 rounded-3 shadow-sm">
 
-  <!--  Encabezado -->
+  <!-- Encabezado -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="m-0">
       <i class="bi bi-box-seam"></i> Mis productos
@@ -11,25 +10,33 @@
     </a>
   </div>
 
-  <!--  Estado de carga -->
+  <!-- Estado de carga -->
   <div *ngIf="loading" class="text-center py-5">
     <div class="spinner-border text-primary"></div>
     <p class="mt-3">Cargando productos...</p>
   </div>
 
-  <!--  Sin productos -->
+  <!-- Sin productos -->
   <div *ngIf="!loading && products.length === 0" class="text-center py-5 text-muted">
     <i class="bi bi-box2"></i>
     <p class="mt-2">No tienes productos publicados.</p>
   </div>
 
-  <!--  Lista de productos -->
+  <!-- Lista de productos -->
   <div *ngIf="!loading && products.length > 0" class="row g-3">
-
     <div *ngFor="let p of products" class="col-md-4">
       <div class="card h-100 shadow-sm">
 
-        <!--  Cuerpo -->
+        <!-- Imagen principal (usa imageUrls[0] o imageUrl) -->
+        <img
+          *ngIf="p.imageUrls?.[0] || p.imageUrl"
+          [src]="p.imageUrls?.[0] || p.imageUrl"
+          class="card-img-top"
+          alt="{{ p.name }}"
+          style="height: 180px; object-fit: cover;"
+        />
+
+        <!-- Cuerpo -->
         <div class="card-body">
           <h5 class="card-title text-truncate" title="{{ p.name }}">{{ p.name }}</h5>
           <p class="card-text small text-muted text-truncate">{{ p.description }}</p>
@@ -48,12 +55,11 @@
           </span>
         </div>
 
-        <!--  Acciones -->
+        <!-- Acciones -->
         <div class="card-footer bg-transparent border-0 text-end">
           <a [routerLink]="['/sell', p.id]" class="btn btn-outline-primary btn-sm me-2">
             <i class="bi bi-pencil"></i> Editar
           </a>
-
           <button class="btn btn-outline-danger btn-sm" (click)="deleteProduct(p)">
             <i class="bi bi-trash"></i> Eliminar
           </button>
@@ -62,11 +68,11 @@
     </div>
   </div>
 
-  <!--  Mensaje (deshabilitado porque 'message' no existe en MyProductsComponent) -->
+  <!-- Mensaje -->
   <div *ngIf="message" class="alert alert-info mt-4" role="alert">
     {{ message }}
-
     <button class="btn btn-outline-secondary btn-sm" (click)="message = ''">
       <i class="bi bi-x-circle"></i> Cerrar
     </button>
+  </div>
 </div>

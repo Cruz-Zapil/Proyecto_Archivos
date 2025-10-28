@@ -6,6 +6,7 @@
  */
 package com.ecgt.api.service;
 
+import com.ecgt.api.dto.ProductDtos;
 import com.ecgt.api.dto.ProductDtos.*;
 import com.ecgt.api.model.*;
 import com.ecgt.api.model.enums.ProductStatus;
@@ -24,15 +25,18 @@ public class ProductService {
   private final ProductRepository productRepo;
   private final CategoryRepository categoryRepo;
   private final UserRepository userRepo;
+  private final ProductImageRepository imageRepo;
 
   private Set<Category> loadCategories(List<UUID> ids) {
-    if (ids == null) return Set.of();
-    if (ids.size() > 2) throw new RuntimeException("Máximo 2 categorías por producto");
+    if (ids == null)
+      return Set.of();
+    if (ids.size() > 2)
+      throw new RuntimeException("Máximo 2 categorías por producto");
     return new HashSet<>(categoryRepo.findAllById(ids));
   }
 
   private Resp toResp(Product p) {
-    
+
     return Resp.builder()
         .id(p.getId())
         .name(p.getName())
@@ -42,12 +46,15 @@ public class ProductService {
         .condition(p.getCondition())
         .status(p.getReviewStatus().name())
         .categories(p.getCategories().stream().map(Category::getName).toList())
+        .images(p.getImages().stream().sorted(Comparator.comparing(
+            img -> Optional.ofNullable(img.getOrderIndex()).orElse(0))).map(ProductImage::getImageUrl).toList())
         .build();
   }
 
   @Transactional
   public Resp createForSeller(UUID sellerId, CreateReq req) {
-    if (req.getStock() == null || req.getStock() < 1) throw new RuntimeException("Stock mínimo 1");
+    if (req.getStock() == null || req.getStock() < 1)
+      throw new RuntimeException("Stock mínimo 1");
     User seller = userRepo.findById(sellerId).orElseThrow();
     Product p = Product.builder()
         .name(req.getName())
@@ -59,48 +66,87 @@ public class ProductService {
         .seller(seller)
         .categories(loadCategories(req.getCategoryIds()))
         .build();
+
+    // Guardar imágenes si vienen en la solicitud
+    if (req.getImageUrls() != null && !req.getImageUrls().isEmpty()) {
+      List<ProductImage> imgs = new ArrayList<>();
+      for (int i = 0; i < req.getImageUrls().size(); i++) {
+        imgs.add(ProductImage.builder()
+            .product(p)
+            .imageUrl(req.getImageUrls().get(i))
+            .orderIndex(i)
+            .build());
+      }
+      p.setImages(new HashSet<>(imgs));
+    }
     productRepo.save(p);
-    // TODO: guardar imágenes en product_images (luego)
+
     return toResp(p);
   }
 
-  @Transactional
+@Transactional
 public Resp updateOwn(UUID sellerId, UUID productId, UpdateReq req) {
     Product p = productRepo.findByIdAndSellerId(productId, sellerId)
         .orElseThrow(() -> new RuntimeException("Producto no encontrado o no autorizado"));
 
-    if (req.getStock() != null && req.getStock() < 1) throw new RuntimeException("Stock mínimo 1");
+    if (req.getStock() != null && req.getStock() < 1)
+        throw new RuntimeException("Stock mínimo 1");
 
     if (req.getName() != null) p.setName(req.getName());
     if (req.getDescription() != null) p.setDescription(req.getDescription());
     if (req.getPrice() != null) p.setPrice(req.getPrice());
     if (req.getStock() != null) p.setStock(req.getStock());
     if (req.getCondition() != null) p.setCondition(req.getCondition());
+    if (req.getCategoryIds() != null) p.setCategories(loadCategories(req.getCategoryIds()));
 
-    if (req.getCategoryIds() != null)
-        p.setCategories(loadCategories(req.getCategoryIds()));
+    //  Sincronización de imágenes (reemplaza por completo las actuales)
+    if (req.getImageUrls() != null) {
+        List<String> newUrls = req.getImageUrls();
 
-    // ⚠️ IMPORTANTE: vuelve a revisión, pero no crea otro
+        // eliminar las que ya no están
+        p.getImages().removeIf(img -> !newUrls.contains(img.getImageUrl()));
+
+        // map actual para reutilizar las que siguen
+        Map<String, ProductImage> current = p.getImages().stream()
+            .collect(HashMap::new, (m, i) -> m.put(i.getImageUrl(), i), HashMap::putAll);
+
+        for (int i = 0; i < newUrls.size(); i++) {
+            String url = newUrls.get(i);
+            ProductImage existing = current.get(url);
+            if (existing == null) {
+                ProductImage newImg = ProductImage.builder()
+                    .product(p)
+                    .imageUrl(url)
+                    .orderIndex(i)
+                    .build();
+                p.getImages().add(newImg);
+            } else {
+                existing.setOrderIndex(i);
+            }
+        }
+    }
+
+    // Cada edición requiere revisión nuevamente
     p.setReviewStatus(ProductStatus.PENDING);
 
+    //  guardamos los cambios
+    productRepo.save(p);
+
+    // devolver DTO actualizado
     return toResp(p);
 }
 
 
-  
-
   public Page<Resp> listMine(UUID sellerId, int page, int size) {
     Page<Product> pg = productRepo.findBySeller(
         userRepo.findById(sellerId).orElseThrow(),
-        PageRequest.of(page, size, Sort.by("createdAt").descending())
-    );
+        PageRequest.of(page, size, Sort.by("createdAt").descending()));
     return pg.map(this::toResp);
   }
 
   public Page<Resp> listPublicApproved(int page, int size) {
     return productRepo.findByReviewStatus(
-        ProductStatus.APPROVED, PageRequest.of(page, size)
-    ).map(this::toResp);
+        ProductStatus.APPROVED, PageRequest.of(page, size)).map(this::toResp);
   }
 
   // --- Moderation ---
@@ -108,8 +154,6 @@ public Resp updateOwn(UUID sellerId, UUID productId, UpdateReq req) {
     return productRepo.findByReviewStatus(ProductStatus.PENDING, PageRequest.of(page, size))
         .map(this::toResp);
   }
-
-  
 
   @Transactional
   public Resp approve(UUID productId) {
@@ -126,10 +170,18 @@ public Resp updateOwn(UUID sellerId, UUID productId, UpdateReq req) {
   }
 
   @Transactional
-public void deleteOwn(UUID sellerId, UUID productId) {
-  Product p = productRepo.findByIdAndSellerId(productId, sellerId)
-      .orElseThrow(() -> new RuntimeException("Producto no encontrado o no autorizado"));
-  productRepo.delete(p);
+  public void deleteOwn(UUID sellerId, UUID productId) {
+    Product p = productRepo.findByIdAndSellerId(productId, sellerId)
+        .orElseThrow(() -> new RuntimeException("Producto no encontrado o no autorizado"));
+    productRepo.delete(p);
+  }
+
+  @Transactional(readOnly = true)
+public Resp getOwn(UUID sellerId, UUID productId) {
+    Product p = productRepo.findByIdAndSellerId(productId, sellerId)
+        .orElseThrow(() -> new RuntimeException("Producto no encontrado o no autorizado"));
+    return toResp(p);
 }
+
 
 }

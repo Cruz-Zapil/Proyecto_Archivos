@@ -58,16 +58,8 @@ public class Product {
 
     /** Categorías (relación muchos a muchos) */
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "product_categories",
-        joinColumns = @JoinColumn(name = "product_id"),
-        inverseJoinColumns = @JoinColumn(name = "category_id")
-    )
+    @JoinTable(name = "product_categories", joinColumns = @JoinColumn(name = "product_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
     private Set<Category> categories = new HashSet<>();
-
-    /** Imágenes asociadas al producto */
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<ProductImage> images = new ArrayList<>();
 
     /** Fecha de creación */
     @Column(name = "created_at")
@@ -82,5 +74,8 @@ public class Product {
     public void preUpdate() {
         updatedAt = OffsetDateTime.now();
     }
-    
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<ProductImage> images = new HashSet<>();
+
 }

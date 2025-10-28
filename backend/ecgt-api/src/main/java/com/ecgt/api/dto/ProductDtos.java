@@ -7,16 +7,12 @@ import java.util.*;
 import com.ecgt.api.model.enums.ProductCondition;
 import com.ecgt.api.model.enums.ProductStatus;
 
-
 /**
  * Product DTOs
  * -------------
  * Estructuras para crear/actualizar/exponer productos.
  * Permanente: contrato estable con el frontend.
  */
-
-
- 
 
 public class ProductDtos {
 
@@ -27,23 +23,29 @@ public class ProductDtos {
     private BigDecimal price;
     private Integer stock;
     private ProductCondition condition; // NEW/USED
-    private List<UUID> categoryIds;     // máx 2
-    private List<String> imageUrls;     // opcional (solo URL)
+    private List<UUID> categoryIds; // máx 2
+    private List<String> imageUrls; // opcional (solo URL)
   }
 
-@Data
-public static class UpdateReq {
-  private String name;
-  private String description;
-  private BigDecimal price;
-  private Integer stock;                // >= 1
-  private ProductCondition condition;   // NEW / USED  (mapea a status_product)
-  private List<UUID> categoryIds;
-  private List<String> imageUrls;
-}
+  public record ImageResp(
+      UUID id,
+      String imageUrl,
+      Integer orderIndex) {
+  }
 
+  @Data
+  public static class UpdateReq {
+    private String name;
+    private String description;
+    private BigDecimal price;
+    private Integer stock; // >= 1
+    private ProductCondition condition; // NEW / USED (mapea a status_product)
+    private List<UUID> categoryIds;
+    private List<String> imageUrls;
+  }
 
-  @Builder @Data
+  @Builder
+  @Data
   public static class Resp {
     private UUID id;
     private String name;
@@ -53,5 +55,8 @@ public static class UpdateReq {
     private ProductCondition condition;
     private String status;
     private List<String> categories; // nombres
+    private List<String> images;
   }
+
+
 }

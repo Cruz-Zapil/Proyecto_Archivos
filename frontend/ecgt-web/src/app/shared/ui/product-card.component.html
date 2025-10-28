@@ -5,14 +5,17 @@
   <!-- Imagen / placeholder -->
   <div class="position-relative">
     <div class="thumb">
-      <ng-container *ngIf="product.imageUrl; else noimg">
+      <!-- ✅ Mostrar imagen si existe thumbUrl (imageUrls[0] || imageUrl) -->
+      <ng-container *ngIf="thumbUrl; else noimg">
         <img
-          [src]="product.imageUrl"
-          [alt]="product.name"
-          loading="lazy"
+          [src]="thumbUrl"
           class="card-img-top"
+          alt="{{ product.name }}"
+          style="height: 200px; object-fit: cover;"
         />
       </ng-container>
+
+      <!-- Placeholder si no hay imagen -->
       <ng-template #noimg>
         <div class="card-img-top d-grid place-items-center placeholder-thumb">
           <i class="bi bi-image" aria-hidden="true"></i>
@@ -39,8 +42,8 @@
     </p>
 
     <div class="d-flex justify-content-between align-items-center mb-1">
-      <span class="badge bg-secondary" *ngIf="product.condition === 'NEW'">Nuevo</span>
-      <span class="badge bg-warning text-dark" *ngIf="product.condition === 'USED'">Usado</span>
+      <span class="badge bg-secondary" *ngIf="product.condition === 'NEW' || product.condition === 'NUEVO'">Nuevo</span>
+      <span class="badge bg-warning text-dark" *ngIf="product.condition === 'USED' || product.condition === 'USADO'">Usado</span>
       <span class="text-muted small">Stock: {{ product.stock }}</span>
     </div>
 

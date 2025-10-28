@@ -19,7 +19,8 @@ export interface Product {
 
   category?: ProductCategory;
   status?: ProductStatus;
-  imageUrl?: string;
+  imageUrl?: string;    // compatibilidad con datos viejos (una sola imagen)
+  imageUrls?: string[]; // NUEVO: lista de imágenes (máx 3 en UI)
 
   // Aliases opcionales (por si algún mock o endpoint viene en español)
   nombre?: string;

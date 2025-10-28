@@ -32,8 +32,8 @@ export interface ApiProductCreateReq {
   price: number;
   stock: number;
   condition: 'NEW' | 'USED';
-  categoryIds?: string[];   // opcional (máx 2)
-  imageUrls?: string[];     // opcional
+  categoryIds?: string[]; // opcional (máx 2)
+  imageUrls?: string[]; // opcional
 }
 export interface ApiProductUpdateReq extends Partial<ApiProductCreateReq> {}
 
@@ -60,12 +60,20 @@ export class ProductService {
     price: Number(raw.price),
     stock: Number(raw.stock),
     condition: (raw.condition ?? 'NEW') as 'NEW' | 'USED',
-    reviewStatus: (raw.reviewStatus ?? raw.status ?? 'PENDING') as 'PENDING' | 'APPROVED' | 'REJECTED',
+    reviewStatus: (raw.reviewStatus ?? raw.status ?? 'PENDING') as
+      | 'PENDING'
+      | 'APPROVED'
+      | 'REJECTED',
     categories: Array.isArray(raw.categories) ? raw.categories : [],
   });
 
   /** Devuelve un PageResp<T> consistente, venga el backend como page o como array plano. */
-  private toPage<T>(resp: any, mapper: (x: any) => T, pageDefault = 0, sizeDefault = 12): PageResp<T> {
+  private toPage<T>(
+    resp: any,
+    mapper: (x: any) => T,
+    pageDefault = 0,
+    sizeDefault = 12
+  ): PageResp<T> {
     // Caso 1: backend ya viene paginado al estilo Spring
     if (resp && Array.isArray(resp.content)) {
       const mapped = resp.content.map(mapper);
@@ -89,8 +97,14 @@ export class ProductService {
       };
     }
     // Caso 3: nada/forma inesperada
-    return { content: [], totalElements: 0, totalPages: 0, number: pageDefault, size: sizeDefault };
-    }
+    return {
+      content: [],
+      totalElements: 0,
+      totalPages: 0,
+      number: pageDefault,
+      size: sizeDefault,
+    };
+  }
 
   // =============== CATÁLOGO PÚBLICO ===============
 
@@ -101,7 +115,11 @@ export class ProductService {
   listPublic(page = 0, size = 12): Observable<PageResp<ApiProductResp>> {
     return this.http
       .get<any>('/products/approved', { page, size })
-      .pipe(map(resp => this.toPage<ApiProductResp>(resp, this.mapProduct, page, size)));
+      .pipe(
+        map((resp) =>
+          this.toPage<ApiProductResp>(resp, this.mapProduct, page, size)
+        )
+      );
   }
 
   // =============== VENDEDOR (COMMON) ===============
@@ -113,7 +131,11 @@ export class ProductService {
   listMine(page = 0, size = 12): Observable<PageResp<ApiProductResp>> {
     return this.http
       .get<any>('/seller/products', { page, size })
-      .pipe(map(resp => this.toPage<ApiProductResp>(resp, this.mapProduct, page, size)));
+      .pipe(
+        map((resp) =>
+          this.toPage<ApiProductResp>(resp, this.mapProduct, page, size)
+        )
+      );
   }
 
   /**
@@ -134,7 +156,8 @@ export class ProductService {
       categoryIds,
       imageUrls,
     };
-    return this.http.post<any>('/seller/products', payload)
+    return this.http
+      .post<any>('/seller/products', payload)
       .pipe(map(this.mapProduct));
   }
 
@@ -156,7 +179,8 @@ export class ProductService {
       categoryIds,
       imageUrls,
     };
-    return this.http.put<any>(`/seller/products/${p.id}`, payload)
+    return this.http
+      .put<any>(`/seller/products/${p.id}`, payload)
       .pipe(map(this.mapProduct));
   }
 
@@ -177,18 +201,29 @@ export class ProductService {
   listPending(page = 0, size = 12): Observable<PageResp<ApiProductResp>> {
     return this.http
       .get<any>('/moderation/products/pending', { page, size })
-      .pipe(map(resp => this.toPage<ApiProductResp>(resp, this.mapProduct, page, size)));
+      .pipe(
+        map((resp) =>
+          this.toPage<ApiProductResp>(resp, this.mapProduct, page, size)
+        )
+      );
   }
 
   /** Aprobar producto (POST por simplicidad). */
   approve(id: string) {
-    return this.http.post<any>(`/moderation/products/${id}/approve`, {})
+    return this.http
+      .post<any>(`/moderation/products/${id}/approve`, {})
       .pipe(map(this.mapProduct));
   }
 
   /** Rechazar producto (POST por simplicidad). */
   reject(id: string) {
-    return this.http.post<any>(`/moderation/products/${id}/reject`, {})
+    return this.http
+      .post<any>(`/moderation/products/${id}/reject`, {})
       .pipe(map(this.mapProduct));
+  }
+
+  // Obtiene un producto propio por id (con imágenes)
+  getMineOne(id: string) {
+    return this.http.get<ApiProductResp>(`/seller/products/${id}`);
   }
 }
