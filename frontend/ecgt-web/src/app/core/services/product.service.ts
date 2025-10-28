@@ -198,15 +198,16 @@ export class ProductService {
    * Productos pendientes de aprobación.
    * GET /api/moderation/products/pending?page=&size=
    */
-  listPending(page = 0, size = 12): Observable<PageResp<ApiProductResp>> {
-    return this.http
-      .get<any>('/moderation/products/pending', { page, size })
-      .pipe(
-        map((resp) =>
-          this.toPage<ApiProductResp>(resp, this.mapProduct, page, size)
-        )
-      );
-  }
+listPending(page = 0, size = 12): Observable<PageResp<ApiProductResp>> {
+  return this.http
+    .get<any>('/moderation/products/pending', { params: { page, size } })
+    .pipe(
+      map((resp) =>
+        this.toPage<ApiProductResp>(resp, this.mapProduct, page, size)
+      )
+    );
+}
+
 
   /** Aprobar producto (POST por simplicidad). */
   approve(id: string) {

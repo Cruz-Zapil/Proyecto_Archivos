@@ -150,10 +150,16 @@ public Resp updateOwn(UUID sellerId, UUID productId, UpdateReq req) {
   }
 
   // --- Moderation ---
-  public Page<Resp> listPending(int page, int size) {
-    return productRepo.findByReviewStatus(ProductStatus.PENDING, PageRequest.of(page, size))
-        .map(this::toResp);
-  }
+  
+public Page<Resp> listPending(int page, int size) {
+    Page<Product> pg = productRepo.findByReviewStatus(
+        ProductStatus.PENDING,
+        PageRequest.of(page, size, Sort.by("createdAt").descending())
+    );
+    System.out.println("🟡 Productos pendientes encontrados: " + pg.getTotalElements());
+    return pg.map(this::toResp);
+}
+
 
   @Transactional
   public Resp approve(UUID productId) {
