@@ -10,7 +10,6 @@ export type ProductCategory =
 export interface Product {
   id: string;
 
-  // Canon: usamos inglés en la app para plantillas/servicios
   name: string;
   description: string;
   price: number;
@@ -19,13 +18,12 @@ export interface Product {
 
   category?: ProductCategory;
   status?: ProductStatus;
-  imageUrl?: string;    // compatibilidad con datos viejos (una sola imagen)
-  imageUrls?: string[]; // NUEVO: lista de imágenes (máx 3 en UI)
-
-  // Aliases opcionales (por si algún mock o endpoint viene en español)
+  imageUrl?: string;     // una imagen (legacy o portada)
+  imageUrls?: string[];  // compatibilidad
+  images?: string[];     // <-- imagenes
   nombre?: string;
   descripcion?: string;
   precio?: number;
   estadoProducto?: ProductCondition;
-   createdAt?: string; //
+  createdAt?: string;
 }

@@ -2,20 +2,21 @@
   [routerLink]="['/product', product.id]"
   class="card product-card text-decoration-none h-100"
 >
-  <!-- Imagen / placeholder -->
   <div class="position-relative">
     <div class="thumb">
-      <!-- ✅ Mostrar imagen si existe thumbUrl (imageUrls[0] || imageUrl) -->
+      <!-- Mostrar imagen o placeholder -->
       <ng-container *ngIf="thumbUrl; else noimg">
         <img
           [src]="thumbUrl"
           class="card-img-top"
           alt="{{ product.name }}"
           style="height: 200px; object-fit: cover;"
+          loading="lazy"
+          (error)="onImgError($event)" 
         />
       </ng-container>
 
-      <!-- Placeholder si no hay imagen -->
+      <!-- Placeholder -->
       <ng-template #noimg>
         <div class="card-img-top d-grid place-items-center placeholder-thumb">
           <i class="bi bi-image" aria-hidden="true"></i>
@@ -52,7 +53,7 @@
         {{ product.price | currency:'GTQ':'symbol-narrow':'1.2-2' }}
       </strong>
       <small class="text-muted">
-        {{ product.category || 'Sin categoría' }}
+        {{ $any(product).category || 'Sin categoría' }}
       </small>
     </div>
   </div>

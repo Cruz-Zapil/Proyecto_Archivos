@@ -83,7 +83,8 @@ export class HomeComponent {
       condition: p.condition ?? 'NEW',
       status: p.reviewStatus === 'APPROVED' ? 'APPROVED' : 'PENDING_REVIEW',
       category: this.toCategory(p.categories?.[0]),
-      imageUrl: (p as any).imageUrls?.[0] ?? 'https://placehold.co/400x300?text=Producto'
+      imageUrl: (p as any).images?.[0] ?? 'https://placehold.co/400x300?text=Producto'
+
     }));
   });
 

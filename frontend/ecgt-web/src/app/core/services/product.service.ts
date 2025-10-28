@@ -14,17 +14,24 @@ import { map, Observable } from 'rxjs';
 import { Product } from '../models/product';
 
 // ====== DTOs del backend (UI) ======
+// ====== DTOs del backend (UI) ======
 export interface ApiProductResp {
-  image: any;
   id: string;
   name: string;
   description?: string;
   price: number;
   stock: number;
   condition: 'NEW' | 'USED';
-  reviewStatus: 'PENDING' | 'APPROVED' | 'REJECTED'; // UI espera reviewStatus
+  reviewStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
   categories: string[];
+
+  //  soporta todas las variantes
+  image?: string | null;     // a veces backend manda "image"
+  imageUrl?: string | null;  // o "imageUrl"
+  images?: string[];         // o "images"
+  imageUrls?: string[];      // o "imageUrls"
 }
+
 
 export interface ApiProductCreateReq {
   name: string;
@@ -51,21 +58,57 @@ export class ProductService {
 
   // ---------- Helpers de normalización ----------
 
-  /** Mapea el objeto crudo del backend (que trae `status`) al modelo UI (que usa `reviewStatus`). */
-  private mapProduct = (raw: any): ApiProductResp => ({
-    image: raw.image ?? null,
+/** Intenta obtener la primera URL válida desde varias formas posibles */
+private pickFirstImage = (raw: any): string | null => {
+  const candidates: Array<string | undefined | null> = [
+    raw?.imageUrl,
+    raw?.image,
+    Array.isArray(raw?.images) && raw.images.length ? raw.images[0] : null,
+    Array.isArray(raw?.imageUrls) && raw.imageUrls.length ? raw.imageUrls[0] : null,
+  ];
+  const first = candidates.find(u => typeof u === 'string' && u.trim().length > 0) as string | undefined;
+  // Si es Google Drive con URL de "file/d/ID/view", conviértelo a enlace directo visible
+  return first ? this.toViewableUrl(first) : null;
+};
+
+/** Convierte enlaces problemáticos (p.ej. Google Drive) a formatos embebibles */
+private toViewableUrl = (u: string): string => {
+  // Google Drive compartido -> vista directa
+  // Formatos:
+  // https://drive.google.com/file/d/FILE_ID/view?usp=sharing  -> https://drive.google.com/uc?export=view&id=FILE_ID
+  const m = u.match(/https:\/\/drive\.google\.com\/file\/d\/([^/]+)\//);
+  if (m?.[1]) return `https://drive.google.com/uc?export=view&id=${m[1]}`;
+  // También soporta URLs "open?id=..."
+  const m2 = u.match(/https:\/\/drive\.google\.com\/open\?id=([^&]+)/);
+  if (m2?.[1]) return `https://drive.google.com/uc?export=view&id=${m2[1]}`;
+  return u;
+};
+
+/** Mapea el objeto crudo del backend al modelo UI consistente */
+private mapProduct = (raw: any): ApiProductResp => {
+  // Normaliza arrays de imágenes
+  const imgArr: string[] = Array.isArray(raw?.images) ? raw.images : Array.isArray(raw?.imageUrls) ? raw.imageUrls : [];
+  const normalizedArr = imgArr.map(this.toViewableUrl);
+
+  const first = this.pickFirstImage(raw);
+
+  return {
     id: String(raw.id),
     name: raw.name,
     description: raw.description ?? '',
     price: Number(raw.price),
     stock: Number(raw.stock),
     condition: (raw.condition ?? 'NEW') as 'NEW' | 'USED',
-    reviewStatus: (raw.reviewStatus ?? raw.status ?? 'PENDING') as
-      | 'PENDING'
-      | 'APPROVED'
-      | 'REJECTED',
+    reviewStatus: (raw.reviewStatus ?? raw.status ?? 'PENDING') as 'PENDING' | 'APPROVED' | 'REJECTED',
     categories: Array.isArray(raw.categories) ? raw.categories : [],
-  });
+    // 👇 añade todas las variantes por compatibilidad con tus componentes
+    image: first,
+    imageUrl: first,
+    images: normalizedArr.length ? normalizedArr : (first ? [first] : []),
+    imageUrls: normalizedArr.length ? normalizedArr : (first ? [first] : []),
+  };
+};
+
 
   /** Devuelve un PageResp<T> consistente, venga el backend como page o como array plano. */
   private toPage<T>(
@@ -112,15 +155,12 @@ export class ProductService {
    * Productos aprobados y visibles para todos.
    * GET /api/products/approved?page=&size=
    */
-  listPublic(page = 0, size = 12): Observable<PageResp<ApiProductResp>> {
-    return this.http
-      .get<any>('/products/approved', { page, size })
-      .pipe(
-        map((resp) =>
-          this.toPage<ApiProductResp>(resp, this.mapProduct, page, size)
-        )
-      );
-  }
+listPublic(page = 0, size = 12): Observable<PageResp<ApiProductResp>> {
+  return this.http
+    .get<any>('/products/approved', { params: { page, size } })
+    .pipe(map(resp => this.toPage<ApiProductResp>(resp, this.mapProduct, page, size)));
+}
+
 
   // =============== VENDEDOR (COMMON) ===============
 

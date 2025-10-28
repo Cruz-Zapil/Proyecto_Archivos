@@ -9,14 +9,6 @@ import {
   PageResp,
 } from '../../core/services/product.service';
 
-/**
- * ProductComponent
- * ----------------
- * Vista de detalle. Temporalmente obtiene el producto buscando
- * dentro de una página "amplia" del catálogo público.
- * Permanente en cuanto exista GET /products/{id} en backend.
- */
-
 @Component({
   selector: 'app-product',
   standalone: true,
@@ -37,8 +29,7 @@ export class ProductComponent {
   ngOnInit() {
     const id = this.route.snapshot.params['id'];
 
-    // ⚠️ Temporal: traemos muchos y buscamos el id en cliente.
-    // Reemplaza por: this.products.getPublicById(id).subscribe(...)
+    // ⚠️ Temporal: traer varios y filtrar en cliente
     this.products.listPublic(0, 200).subscribe({
       next: (page: PageResp<ApiProductResp>) => {
         this.product = page.content.find((p) => p.id === id);
@@ -51,31 +42,38 @@ export class ProductComponent {
   addToCart() {
     if (!this.product) return;
 
-    //  Evita agregar productos sin stock
     if (this.product.stock <= 0) {
       alert(`❌ El producto "${this.product.name}" está agotado.`);
       return;
     }
 
-    // Mapeo mínimo del modelo
-    const uiProduct: any = {
-      id: this.product.id,
-      name: this.product.name,
-      description: this.product.description,
-      price: this.product.price,
-      imageUrl: '',
-      status: 'APPROVED',
-      stock: this.product.stock,
-      condition: this.product.condition,
-      category: this.product.categories?.[0] ?? 'OTHER',
+    const p = this.product!;
+    const productForCart = {
+      ...p,
+      description: p.description ?? '',
+      imageUrl: p.imageUrl ?? undefined,
+      image: p.image ?? undefined
     };
-
-    //  Agregar al carrito
-    this.cart.add(
-      { ...this.product!, description: this.product!.description ?? '' },
-      1
-    );
+    this.cart.add(productForCart, 1);
 
     alert(`${this.product.name} agregado al carrito 🛒`);
+  }
+
+  /** ✅ Getter nuevo para mostrar la imagen del producto */
+  get heroUrl(): string {
+    const p: any = this.product;
+    if (!p) return 'https://via.placeholder.com/640x640?text=Producto';
+
+    const arr: string[] =
+      (Array.isArray(p.imageUrls) && p.imageUrls) ||
+      (Array.isArray(p.images) && p.images) ||
+      [];
+
+    return (
+      (arr.length ? arr[0] : null) ||
+      p.imageUrl ||
+      p.image ||
+      'https://via.placeholder.com/640x640?text=Producto'
+    );
   }
 }

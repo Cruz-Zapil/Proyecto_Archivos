@@ -1,121 +1,176 @@
-<div class="surface p-4 rounded-3 shadow-sm">
-  <h2 class="mb-4">
-    <i class="bi bi-bag-plus"></i>
-    {{ isEditMode ? 'Editar producto' : 'Vender un nuevo producto' }}
-  </h2>
+<div class="surface p-4 rounded-3 shadow-sm position-relative">
+  <!-- Encabezado -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="m-0 fw-semibold text-dark">
+      <i class="bi bi-bag-plus text-primary me-2"></i>
+      {{ isEditMode ? 'Editar producto' : 'Vender un nuevo producto' }}
+    </h2>
+
+    <!-- Estado del producto -->
+    <span
+      *ngIf="isEditMode"
+      class="badge fs-6 px-3 py-2"
+      [ngClass]="{
+        'bg-warning text-dark': product.status?.toString() === 'PENDING',
+        'bg-success': product.status?.toString() === 'APPROVED',
+        'bg-danger': product.status?.toString() === 'REJECTED'
+      }"
+    >
+      {{
+        product.status?.toString() === 'PENDING'
+          ? 'Pendiente'
+          : product.status?.toString() === 'APPROVED'
+          ? 'Aprobado'
+          : 'Rechazado'
+      }}
+    </span>
+  </div>
 
   <form #form="ngForm" (ngSubmit)="submit(form)">
-    <!-- Nombre -->
-    <div class="mb-3">
-      <label class="form-label">Nombre</label>
-      <input
-        class="form-control"
-        name="name"
-        [(ngModel)]="product.name"
-        required
-      />
-    </div>
+    <!-- ======= Sección: Detalles básicos ======= -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body">
+        <!-- Nombre -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Nombre</label>
+          <input
+            class="form-control"
+            name="name"
+            [(ngModel)]="product.name"
+            required
+            placeholder="Ej. Laptop Lenovo IdeaPad 3"
+          />
+        </div>
 
-    <!-- Descripción -->
-    <div class="mb-3">
-      <label class="form-label">Descripción</label>
-      <textarea
-        class="form-control"
-        name="description"
-        [(ngModel)]="product.description"
-      ></textarea>
-    </div>
+        <!-- Descripción -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Descripción</label>
+          <textarea
+            class="form-control"
+            name="description"
+            rows="3"
+            [(ngModel)]="product.description"
+            placeholder="Describe brevemente el producto..."
+          ></textarea>
+        </div>
 
-    <!-- Precio -->
-    <div class="mb-3">
-      <label class="form-label">Precio (GTQ)</label>
-      <input
-        type="number"
-        class="form-control"
-        name="price"
-        [(ngModel)]="product.price"
-        min="1"
-        required
-      />
-    </div>
+        <!-- Precio y stock -->
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Precio (GTQ)</label>
+            <input
+              type="number"
+              class="form-control"
+              name="price"
+              [(ngModel)]="product.price"
+              min="1"
+              required
+              placeholder="Ej. 2500"
+            />
+          </div>
 
-    <!-- Stock -->
-    <div class="mb-3">
-      <label class="form-label">Stock</label>
-      <input
-        type="number"
-        class="form-control"
-        name="stock"
-        [(ngModel)]="product.stock"
-        min="1"
-        required
-      />
-    </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Stock</label>
+            <input
+              type="number"
+              class="form-control"
+              name="stock"
+              [(ngModel)]="product.stock"
+              min="1"
+              required
+              placeholder="Ej. 5"
+            />
+          </div>
+        </div>
 
-    <!-- Estado -->
-    <div class="mb-3">
-      <label class="form-label">Condición</label>
-      <select
-        class="form-select"
-        name="condition"
-        [(ngModel)]="product.condition"
-      >
-        <option value="NEW">Nuevo</option>
-        <option value="USED">Usado</option>
-      </select>
-    </div>
-
-    <!-- Imágenes -->
-    <div class="mb-3">
-      <label class="form-label">URLs de imágenes</label>
-      <div class="input-group mb-2">
-        <input
-          type="url"
-          class="form-control"
-          [(ngModel)]="newImageUrl"
-          name="newImageUrl"
-          placeholder="https://i.imgur.com/abc123.jpg"
-        />
-        <button
-          type="button"
-          class="btn btn-outline-primary"
-          (click)="addImage()"
-        >
-          Agregar
-        </button>
+        <!-- Condición -->
+        <div class="mt-3">
+          <label class="form-label fw-semibold">Condición</label>
+          <select
+            class="form-select"
+            name="condition"
+            [(ngModel)]="product.condition"
+          >
+            <option value="NEW">Nuevo</option>
+            <option value="USED">Usado</option>
+          </select>
+        </div>
       </div>
+    </div>
 
-      <!-- Lista de imágenes -->
-      <div class="row g-2">
-        <div class="col-6 col-md-4" *ngFor="let img of images; let i = index">
-          <div class="position-relative">
-            <img [src]="img" class="img-fluid rounded border" />
-            <button
-              type="button"
-              class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1"
-              (click)="removeImage(i)"
-            >
-              &times;
-            </button>
+    <!-- ======= Sección: Imágenes ======= -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body">
+        <h5 class="fw-semibold mb-3 text-dark">
+          <i class="bi bi-images me-2 text-primary"></i> Imágenes del producto
+        </h5>
+
+        <!-- Campo de URL -->
+        <div class="input-group mb-3">
+          <input
+            type="url"
+            class="form-control"
+            [(ngModel)]="newImageUrl"
+            name="newImageUrl"
+            placeholder="https://i.imgur.com/abc123.jpg"
+          />
+          <button
+            type="button"
+            class="btn btn-outline-primary"
+            (click)="addImage()"
+          >
+            <i class="bi bi-plus-circle"></i> Agregar
+          </button>
+        </div>
+
+        <!-- Vista previa principal -->
+        <div *ngIf="images.length > 0" class="text-center mb-3">
+          <div class="ratio ratio-1x1 mx-auto" style="max-width: 300px;">
+            <img
+              [src]="images[0]"
+              class="rounded shadow-sm object-fit-cover w-100 h-100 border"
+              alt="Imagen principal"
+            />
+          </div>
+          <small class="text-muted d-block mt-2">Imagen principal</small>
+        </div>
+
+        <!-- Miniaturas -->
+        <div class="row g-2">
+          <div
+            class="col-6 col-md-3"
+            *ngFor="let img of images; let i = index"
+          >
+            <div class="position-relative">
+              <img [src]="img" class="img-fluid rounded border" />
+              <button
+                type="button"
+                class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 rounded-circle"
+                (click)="removeImage(i)"
+              >
+                &times;
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Botón de guardar -->
-    <div class="mt-4 text-end">
+    <!-- ======= Botón de acción ======= -->
+    <div class="text-end">
       <button
-        class="btn btn-primary"
+        class="btn btn-primary px-4"
         type="submit"
         [disabled]="loading"
       >
+        <i class="bi bi-upload me-2"></i>
         {{ isEditMode ? 'Guardar cambios' : 'Publicar producto' }}
       </button>
     </div>
   </form>
 
   <!-- Mensaje -->
-  <div *ngIf="message" class="alert alert-info mt-3 text-center small">
+  <div *ngIf="message" class="alert alert-info mt-4 text-center small shadow-sm">
     {{ message }}
   </div>
 </div>
